@@ -4,14 +4,14 @@ const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MAX_LEN = 240;
+const MAX_LEN = 2000;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
-app.use(express.json({ limit: "16kb" }));
+app.use(express.json({ limit: "32kb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 const ESTADOS_VALIDOS = ["pantalla", "respondida"];

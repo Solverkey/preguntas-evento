@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#FAF9F5" />
 <title>Preguntas en directo · SKAI</title>
 <style>
 @font-face{font-family:"Spartan";src:url("/fonts/Spartan-300.ttf") format("truetype");font-weight:300;font-display:swap}
@@ -23,8 +25,8 @@
   --green-500:#22A06B; --green-700:#157A50;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--cream);color:var(--neutral-900);font-family:'Poppins',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+html{scroll-behavior:smooth;color-scheme:light}
+body{margin:0;background:var(--cream);color:var(--neutral-900);font-family:'Poppins',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh}
 textarea,input,button{font-family:'Poppins',sans-serif}
 ::selection{background:var(--coral-100)}
 
@@ -49,15 +51,6 @@ body.proyeccion-on{background:var(--neutral-900)}
 .brand{display:flex; align-items:baseline; gap:10px; min-width:0; flex-shrink:0}
 .brand img{height:18px; display:block}
 .brand span{font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.14em; color:var(--neutral-500); white-space:nowrap}
-.tabs{
-  display:flex; align-items:center; gap:4px; background:var(--neutral-100);
-  border:1px solid var(--neutral-200); border-radius:999px; padding:4px;
-}
-.tab-btn{
-  border:none; cursor:pointer; border-radius:999px; padding:8px 17px;
-  font-size:13px; font-weight:600; background:transparent; color:var(--neutral-600);
-}
-.tab-btn.active{background:var(--neutral-900); color:#fff}
 .live-pill{
   display:flex; align-items:center; gap:10px; font-family:ui-monospace,Menlo,monospace;
   font-size:11px; color:var(--neutral-600); white-space:nowrap;
@@ -68,8 +61,12 @@ body.proyeccion-on{background:var(--neutral-900)}
   background-image:radial-gradient(var(--neutral-200) 1px,transparent 1px);
   background-size:26px 26px;
   min-height:calc(100vh - 62px);
+  min-height:calc(100dvh - 62px);
   display:flex; justify-content:center;
   padding:56px 24px 80px;
+  padding-left:max(24px, env(safe-area-inset-left));
+  padding-right:max(24px, env(safe-area-inset-right));
+  padding-bottom:max(80px, env(safe-area-inset-bottom));
 }
 .asis-wrap{width:100%; max-width:460px; display:flex; flex-direction:column; gap:20px}
 .asis-hero{display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px}
@@ -95,27 +92,23 @@ body.proyeccion-on{background:var(--neutral-900)}
   color:var(--neutral-900); background:var(--cream); outline:none;
 }
 #q-input:focus{border-color:var(--coral-500); background:#fff}
-.asis-row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
-.char-count{font-family:ui-monospace,Menlo,monospace; font-size:11px; color:var(--neutral-400)}
+.asis-row{display:flex; justify-content:center}
 #send-btn{
-  border:none; border-radius:11px; padding:12px 22px; font-size:14px; font-weight:600;
+  border:none; border-radius:11px; padding:12px 28px; font-size:14px; font-weight:600;
   background:var(--neutral-200); color:var(--neutral-400); cursor:pointer;
 }
 #send-btn.ready{background:var(--coral-500); color:#fff}
 #send-btn.ready:hover{background:var(--coral-600)}
-.send-error{margin:0; font-size:12.5px; color:var(--coral-600); display:none}
-.mias-block{display:flex; flex-direction:column; gap:10px}
-.mias-title{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.12em; color:var(--neutral-500); padding:0 4px}
-.mia-card{
-  background:#fff; border:1px solid var(--neutral-200); border-radius:14px; padding:15px 16px;
-  display:flex; flex-direction:column; gap:10px; animation:fadeUp .3s ease both;
+.send-error{margin:0; font-size:12.5px; color:var(--coral-600); display:none; text-align:center}
+.thanks-card{display:none; text-align:center; align-items:center; gap:12px}
+.thanks-card.visible{display:flex}
+.thanks-card h2{font-family:'Spartan',sans-serif; font-weight:700; font-size:28px; margin:0; letter-spacing:-0.02em}
+.thanks-card p{margin:0; font-size:14.5px; line-height:1.55; color:var(--neutral-600)}
+#otra-btn{
+  border:none; border-radius:11px; padding:12px 28px; font-size:14px; font-weight:600;
+  background:var(--coral-500); color:#fff; cursor:pointer; margin-top:6px;
 }
-.mia-card p{margin:0; font-size:14.5px; line-height:1.55}
-.mia-meta{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-.badge{display:inline-flex; border-radius:999px; padding:4px 11px; font-size:11px; font-weight:600}
-.badge-pantalla{background:var(--coral-50); color:var(--coral-600)}
-.badge-respondida{background:#E9F6EF; color:var(--green-700)}
-.mia-time{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-400)}
+#otra-btn:hover{background:var(--coral-600)}
 
 #view-proyeccion .inner{
   background:var(--neutral-900);
@@ -152,19 +145,19 @@ body.proyeccion-on #view-proyeccion .inner{min-height:100vh}
 .proy-foot span{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.1em; color:var(--neutral-700)}
 
 @media (max-width:640px){
-  .topbar-inner{padding:10px 16px; height:auto; flex-wrap:wrap; gap:10px}
+  .topbar-inner{padding:10px 16px; height:auto; gap:10px}
   .brand span,.live-pill{display:none}
-  .tabs{order:3; width:100%; justify-content:center}
-  #view-asistente .inner{padding:32px 16px 56px}
-  .asis-title{font-size:29px}
+  #view-asistente .inner{padding:32px 16px 56px; padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); padding-bottom:max(56px, env(safe-area-inset-bottom))}
+  .asis-title{font-size:28px}
+  .underline{white-space:normal}
+  .live-badge{text-align:center; white-space:normal; max-width:100%}
   .asis-card{padding:16px}
   #q-input{min-height:100px; font-size:16px}
-  .asis-row{flex-direction:column; align-items:stretch}
-  #send-btn{width:100%; padding:13px 22px}
-  .char-count{text-align:right}
+  #send-btn,#otra-btn{width:100%; padding:13px 22px}
   .proy-bubble{padding:26px 28px}
   .proy-nav{flex-wrap:wrap; justify-content:center}
   .proy-foot span{display:none}
+  #view-proyeccion .inner{padding:40px 16px 48px; gap:28px}
 }
 </style>
 </head>
@@ -175,10 +168,6 @@ body.proyeccion-on #view-proyeccion .inner{min-height:100vh}
     <div class="brand">
       <img src="/assets/skai-logo.svg" alt="SKAI" />
       <span>PREGUNTAS EN DIRECTO</span>
-    </div>
-    <div class="tabs">
-      <button class="tab-btn" id="tab-asistente" type="button">Asistente</button>
-      <button class="tab-btn" id="tab-proyeccion" type="button">Proyección</button>
     </div>
     <div class="live-pill"><span class="dot"></span>EN DIRECTO</div>
   </div>
@@ -196,18 +185,18 @@ body.proyeccion-on #view-proyeccion .inner{min-height:100vh}
         </h1>
         <p class="asis-sub">Escribe tu pregunta y aparecerá en la pantalla de la sala. No hace falta dar tu nombre.</p>
       </div>
-      <div class="asis-card">
+      <div class="asis-card" id="form-card">
         <label>TU PREGUNTA</label>
-        <textarea id="q-input" maxlength="240" placeholder="¿Cómo distingue SKAI una llamada de un cliente real de una comercial?"></textarea>
+        <textarea id="q-input" placeholder="¿Cómo distingue SKAI una llamada de un cliente real de una comercial?"></textarea>
         <div class="asis-row">
-          <span class="char-count"><span id="char-n">240</span> / 240</span>
           <button id="send-btn" type="button">Enviar pregunta</button>
         </div>
         <p class="send-error" id="send-error"></p>
       </div>
-      <div class="mias-block" id="mias-block" style="display:none">
-        <div class="mias-title">MIS PREGUNTAS</div>
-        <div id="mias-list"></div>
+      <div class="asis-card thanks-card" id="thanks-card">
+        <h2>¡Gracias!</h2>
+        <p>Tu pregunta ya está en la pantalla de la sala. ¿Quieres hacer otra?</p>
+        <button id="otra-btn" type="button">Hacer otra pregunta</button>
       </div>
     </div>
   </div>
@@ -233,18 +222,10 @@ body.proyeccion-on #view-proyeccion .inner{min-height:100vh}
 </div>
 
 <script>
-const MIAS_KEY = "skai-mias-ids";
-
 function currentView(){
   const path = location.pathname.replace(/\/+$/, "") || "/";
   if(path === "/proyeccion" || location.hash === "#proyeccion") return "proyeccion";
   return "asistente";
-}
-
-function go(view){
-  if(view === "proyeccion") history.replaceState(null, "", "/proyeccion");
-  else history.replaceState(null, "", "/");
-  renderRoute();
 }
 
 function renderRoute(){
@@ -253,13 +234,8 @@ function renderRoute(){
   document.getElementById("topbar").style.display = v === "proyeccion" ? "none" : "";
   document.getElementById("view-asistente").classList.toggle("active", v === "asistente");
   document.getElementById("view-proyeccion").classList.toggle("active", v === "proyeccion");
-  document.getElementById("tab-asistente").classList.toggle("active", v === "asistente");
-  document.getElementById("tab-proyeccion").classList.toggle("active", v === "proyeccion");
   refreshAll();
 }
-
-document.getElementById("tab-asistente").onclick = () => go("asistente");
-document.getElementById("tab-proyeccion").onclick = () => go("proyeccion");
 
 async function getQuestions(){
   try{
@@ -290,40 +266,35 @@ function escapeHtml(str){
   div.textContent = str;
   return div.innerHTML;
 }
-function timeAgo(ts){
-  const s = Math.floor((Date.now() - ts) / 1000);
-  if(s < 60) return "ahora mismo";
-  const m = Math.floor(s / 60);
-  if(m < 60) return "hace " + m + " min";
-  return "hace " + Math.floor(m / 60) + " h";
-}
-function getMiasIds(){
-  try{ return JSON.parse(localStorage.getItem(MIAS_KEY) || "[]"); }catch(e){ return []; }
-}
-function addMiaId(id){
-  const ids = getMiasIds();
-  ids.unshift(id);
-  try{ localStorage.setItem(MIAS_KEY, JSON.stringify(ids.slice(0, 20))); }catch(e){}
-}
 
 const qInput = document.getElementById("q-input");
-const charN = document.getElementById("char-n");
 const sendBtn = document.getElementById("send-btn");
 const sendError = document.getElementById("send-error");
-const miasBlock = document.getElementById("mias-block");
-const miasList = document.getElementById("mias-list");
+const formCard = document.getElementById("form-card");
+const thanksCard = document.getElementById("thanks-card");
 
-function updateCharCount(){
-  charN.textContent = 240 - qInput.value.length;
+function updateSendBtn(){
   const ready = qInput.value.trim().length > 2;
   sendBtn.classList.toggle("ready", ready);
   sendBtn.disabled = !ready;
 }
-qInput.addEventListener("input", updateCharCount);
+function mostrarGracias(){
+  formCard.style.display = "none";
+  thanksCard.classList.add("visible");
+}
+function mostrarFormulario(){
+  thanksCard.classList.remove("visible");
+  formCard.style.display = "flex";
+  qInput.value = "";
+  sendError.style.display = "none";
+  updateSendBtn();
+  qInput.focus();
+}
+qInput.addEventListener("input", updateSendBtn);
 qInput.addEventListener("keydown", (e) => {
   if((e.metaKey || e.ctrlKey) && e.key === "Enter") sendBtn.click();
 });
-updateCharCount();
+updateSendBtn();
 
 sendBtn.addEventListener("click", async () => {
   const text = qInput.value.trim();
@@ -332,38 +303,16 @@ sendBtn.addEventListener("click", async () => {
   sendBtn.textContent = "Enviando...";
   sendError.style.display = "none";
   try{
-    const q = await addQuestion(text);
-    addMiaId(q.id);
-    qInput.value = "";
-    refreshMias();
+    await addQuestion(text);
+    mostrarGracias();
   }catch(e){
     sendError.textContent = e.message || "No se pudo enviar. Prueba de nuevo.";
     sendError.style.display = "block";
   }
   sendBtn.textContent = "Enviar pregunta";
-  updateCharCount();
+  updateSendBtn();
 });
-
-async function refreshMias(){
-  const ids = getMiasIds();
-  if(!ids.length){ miasBlock.style.display = "none"; return; }
-  const list = await getQuestions();
-  const byId = Object.fromEntries(list.map((q) => [q.id, q]));
-  const rows = ids.map((id) => byId[id]).filter(Boolean);
-  if(!rows.length){ miasBlock.style.display = "none"; return; }
-  miasBlock.style.display = "flex";
-  miasList.innerHTML = rows.map((q) => `
-    <div class="mia-card">
-      <p>${escapeHtml(q.text)}</p>
-      <div class="mia-meta">
-        <span class="badge ${q.status === "respondida" ? "badge-respondida" : "badge-pantalla"}">
-          ${q.status === "respondida" ? "Respondida" : "En pantalla"}
-        </span>
-        <span class="mia-time">${timeAgo(q.ts)}</span>
-      </div>
-    </div>
-  `).join("");
-}
+document.getElementById("otra-btn").addEventListener("click", mostrarFormulario);
 
 const proyBubbleArea = document.getElementById("proy-bubble-area");
 const proyContador = document.getElementById("proy-contador");
@@ -450,8 +399,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 async function refreshAll(){
-  if(currentView() === "asistente") refreshMias();
-  else refreshProyeccion();
+  if(currentView() === "proyeccion") refreshProyeccion();
 }
 
 if(window.EventSource){
