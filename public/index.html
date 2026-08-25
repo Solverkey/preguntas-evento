@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Preguntas en directo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #1A0E15;
+    --ink-line: #3A1F2E;
+    --paper: #FFF7FA;
+    --paper-line: #F3D9E6;
+    --signal: #db495e;
+    --slate: #B98AA0;
+    --slate-dark: #8C4A67;
+    --text-light: #FDEEF5;
+    --text-dark: #2A0E1B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:transparent;
+    color:var(--text-dark);
+    min-height:100vh;
+  }
+  .view{ display:none; min-height:100vh; }
+  .view.active{ display:flex; flex-direction:column; }
+
+  /* ---------- ENVIAR ---------- */
+  #view-enviar{
+    background:var(--paper);
+    align-items:center;
+    justify-content:center;
+    padding:32px 20px;
+  }
+  .send-card{
+    width:100%;
+    max-width:440px;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--slate-dark);
+    font-weight:600;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px; border-radius:50%;
+    background:var(--signal);
+    display:inline-block;
+  }
+  .send-title{
+    font-family:'Instrument Serif', serif;
+    font-size:40px;
+    line-height:1.05;
+    letter-spacing:0.01em;
+    margin:0 0 28px;
+    color:var(--text-dark);
+  }
+  textarea#q-input{
+    width:100%;
+    min-height:130px;
+    resize:none;
+    border:1.5px solid var(--paper-line);
+    background:#fff;
+    border-radius:14px;
+    padding:16px;
+    font-family:'Inter',sans-serif;
+    font-size:17px;
+    color:var(--text-dark);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  textarea#q-input:focus{ border-color:var(--signal); }
+  .char-count{
+    text-align:right;
+    font-size:12px;
+    color:var(--slate);
+    margin-top:6px;
+  }
+  button.primary{
+    margin-top:18px;
+    width:100%;
+    background:var(--signal);
+    color:#fff;
+    border:none;
+    border-radius:14px;
+    padding:16px;
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    transition:transform .1s ease, background .15s ease;
+  }
+  button.primary:active{ transform:scale(0.98); }
+  button.primary:disabled{ opacity:0.45; cursor:default; }
+
+  .confirm{
+    display:none;
+    text-align:center;
+    padding:40px 10px;
+  }
+  .confirm.show{ display:block; }
+  .confirm .mark{
+    width:52px;height:52px;border-radius:50%;
+    background:var(--signal);
+    margin:0 auto 20px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;color:var(--text-dark);
+  }
+  .confirm h2{
+    font-family:'Instrument Serif', serif;
+    font-size:30px;
+    margin:0 0 8px;
+  }
+  .confirm p{ color:var(--slate-dark); margin:0 0 24px; font-size:14px; }
+  .confirm button{
+    background:none;
+    border:1.5px solid var(--signal);
+    color:var(--signal);
+    border-radius:12px;
+    padding:10px 20px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    letter-spacing:0.03em;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  /* ---------- PANEL ---------- */
+  #view-panel{
+    background:var(--ink);
+    color:var(--text-light);
+    min-height:100vh;
+  }
+  .panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 28px;
+    border-bottom:1px solid var(--ink-line);
+  }
+  .panel-header .eyebrow{ color:var(--slate); margin:0; }
+  .panel-header .eyebrow::before{ background:var(--signal); }
+  .count-pill{
+    font-size:12px;
+    color:#fff;
+    background:var(--signal);
+    padding:4px 10px;
+    border-radius:20px;
+    font-weight:700;
+    letter-spacing:0.03em;
+  }
+  .queue{
+    padding:18px 28px 60px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    max-width:760px;
+    margin:0 auto;
+    width:100%;
+  }
+  .empty-state{
+    text-align:center;
+    padding:80px 20px;
+    color:var(--slate);
+  }
+  .empty-state .big-q{
+    font-family:'Instrument Serif', serif;
+    font-size:64px;
+    color:var(--ink-line);
+    line-height:1;
+    margin-bottom:10px;
+  }
+  .q-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    background:#181923;
+    border:1px solid var(--ink-line);
+    border-radius:14px;
+    padding:16px 18px;
+    animation: arrive .35s ease;
+  }
+  @keyframes arrive{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .q-text{
+    flex:1;
+    font-size:15.5px;
+    line-height:1.4;
+    color:var(--text-light);
+  }
+  .q-time{
+    font-size:11px;
+    color:var(--slate);
+    margin-top:4px;
+    display:block;
+  }
+  .q-actions{ display:flex; gap:8px; flex-shrink:0; }
+  .btn-show{
+    background:var(--signal);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:9px 16px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    font-size:13px;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+  }
+  .btn-dismiss{
+    background:none;
+    border:1px solid var(--ink-line);
+    color:var(--slate);
+    border-radius:10px;
+    padding:9px 12px;
+    font-size:13px;
+    letter-spacing:0.02em;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+  }
+
+  /* Featured big view */
+  #featured-view{
+    display:none;
+    min-height:100vh;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:60px 40px;
+    position:relative;
+    text-align:center;
+  }
+  #featured-view.show{ display:flex; }
+  .quote-mark{
+    font-family:'Instrument Serif', serif;
+    font-size:120px;
+    color:var(--signal);
+    line-height:0.5;
+    margin-bottom:20px;
+    opacity:0.85;
+  }
+  .featured-text{
+    font-family:'Instrument Serif', serif;
+    font-size:clamp(32px, 5vw, 64px);
+    line-height:1.2;
+    max-width:1000px;
+    color:var(--text-light);
+    animation: featureIn .4s ease;
+  }
+  @keyframes featureIn{
+    from{ opacity:0; transform:scale(0.97); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  .featured-underline{
+    width:70px; height:3px; background:var(--signal);
+    margin:36px auto 0;
+  }
+  .back-btn{
+    position:absolute;
+    top:28px; left:28px;
+    background:none;
+    border:1px solid var(--ink-line);
+    color:var(--slate);
+    border-radius:10px;
+    padding:10px 16px;
+    font-size:13px;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+  }
+  .back-btn:hover{ color:var(--text-light); border-color:var(--slate); }
+
+  ::selection{ background:var(--signal); color:var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- VISTA: ENVIAR -->
+<div id="view-enviar" class="view">
+  <div class="send-card">
+    <div id="form-state">
+      <div class="eyebrow">Pregunta en directo</div>
+      <h1 class="send-title">Escribe tu<br/>pregunta</h1>
+      <textarea id="q-input" maxlength="240" placeholder="¿Qué quieres preguntar?"></textarea>
+      <div class="char-count"><span id="char-n">0</span>/240</div>
+      <button class="primary" id="send-btn">Enviar pregunta</button>
+    </div>
+    <div class="confirm" id="confirm-state">
+      <div class="mark">✓</div>
+      <h2>Enviada</h2>
+      <p>Tu pregunta ya está en la cola.</p>
+      <button id="another-btn">Enviar otra</button>
+    </div>
+  </div>
+</div>
+
+<!-- VISTA: PANEL -->
+<div id="view-panel" class="view">
+  <div id="queue-view">
+    <div class="panel-header">
+      <div class="eyebrow">Cola de preguntas</div>
+      <div class="count-pill" id="count-pill">0</div>
+    </div>
+    <div class="queue" id="queue-list"></div>
+  </div>
+
+  <div id="featured-view">
+    <button class="back-btn" id="back-btn">← Volver a la lista</button>
+    <div class="quote-mark">"</div>
+    <div class="featured-text" id="featured-text"></div>
+    <div class="featured-underline"></div>
+  </div>
+</div>
+
+<script>
+async function getQuestions(){
+  try{
+    const r = await fetch("/api/questions");
+    return await r.json();
+  }catch(e){ console.error("No se pudieron cargar las preguntas", e); return []; }
+}
+async function addQuestion(text){
+  const r = await fetch("/api/questions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+  if(!r.ok) throw new Error("No se pudo enviar la pregunta");
+  return await r.json();
+}
+async function dismissQuestion(id){
+  try{ await fetch(`/api/questions/${id}`, { method: "DELETE" }); }
+  catch(e){ console.error("No se pudo descartar la pregunta", e); }
+}
+async function getFeatured(){
+  try{
+    const r = await fetch("/api/featured");
+    const data = await r.json();
+    return data.id || "";
+  }catch(e){ return ""; }
+}
+async function setFeatured(id){
+  try{
+    await fetch("/api/featured", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+  }catch(e){ console.error("No se pudo actualizar la pregunta destacada", e); }
+}
+
+/* ---------- ROUTING ---------- */
+function currentView(){
+  return location.hash === "#panel" ? "panel" : "enviar";
+}
+function renderRoute(){
+  const v = currentView();
+  document.getElementById("view-enviar").classList.toggle("active", v === "enviar");
+  document.getElementById("view-panel").classList.toggle("active", v === "panel");
+  if(v === "panel") refreshPanel();
+}
+window.addEventListener("hashchange", renderRoute);
+
+/* ---------- VISTA ENVIAR ---------- */
+const qInput = document.getElementById("q-input");
+const charN = document.getElementById("char-n");
+const sendBtn = document.getElementById("send-btn");
+const formState = document.getElementById("form-state");
+const confirmState = document.getElementById("confirm-state");
+
+qInput.addEventListener("input", () => {
+  charN.textContent = qInput.value.length;
+  sendBtn.disabled = qInput.value.trim().length === 0;
+});
+sendBtn.disabled = true;
+
+sendBtn.addEventListener("click", async () => {
+  const text = qInput.value.trim();
+  if(!text) return;
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Enviando...";
+  try{
+    await addQuestion(text);
+    formState.style.display = "none";
+    confirmState.classList.add("show");
+  }catch(e){
+    alert("No se pudo enviar la pregunta. Prueba de nuevo.");
+    sendBtn.disabled = false;
+  }
+  sendBtn.textContent = "Enviar pregunta";
+});
+
+document.getElementById("another-btn").addEventListener("click", () => {
+  qInput.value = "";
+  charN.textContent = "0";
+  sendBtn.disabled = true;
+  confirmState.classList.remove("show");
+  formState.style.display = "block";
+  qInput.focus();
+});
+
+/* ---------- VISTA PANEL ---------- */
+const queueView = document.getElementById("queue-view");
+const featuredView = document.getElementById("featured-view");
+const queueList = document.getElementById("queue-list");
+const countPill = document.getElementById("count-pill");
+const featuredText = document.getElementById("featured-text");
+
+function timeAgo(ts){
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if(s < 60) return "ahora mismo";
+  const m = Math.floor(s/60);
+  if(m < 60) return `hace ${m} min`;
+  const h = Math.floor(m/60);
+  return `hace ${h} h`;
+}
+
+async function refreshPanel(){
+  const [list, featuredId] = await Promise.all([getQuestions(), getFeatured()]);
+
+  if(featuredId){
+    const q = list.find(x => x.id === featuredId);
+    if(q){
+      queueView.style.display = "none";
+      featuredView.classList.add("show");
+      featuredText.textContent = q.text;
+      return;
+    }
+  }
+  featuredView.classList.remove("show");
+  queueView.style.display = "block";
+
+  countPill.textContent = list.length;
+  if(list.length === 0){
+    queueList.innerHTML = `<div class="empty-state"><div class="big-q">?</div>Todavía no ha llegado ninguna pregunta</div>`;
+    return;
+  }
+  const sorted = [...list].sort((a,b) => b.ts - a.ts);
+  queueList.innerHTML = sorted.map(q => `
+    <div class="q-row" data-id="${q.id}">
+      <div>
+        <div class="q-text">${escapeHtml(q.text)}</div>
+        <span class="q-time">${timeAgo(q.ts)}</span>
+      </div>
+      <div class="q-actions">
+        <button class="btn-show" data-action="show" data-id="${q.id}">Mostrar</button>
+        <button class="btn-dismiss" data-action="dismiss" data-id="${q.id}">Descartar</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+queueList.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  const id = btn.dataset.id;
+  if(btn.dataset.action === "show"){
+    await setFeatured(id);
+  } else if(btn.dataset.action === "dismiss"){
+    await dismissQuestion(id);
+  }
+  refreshPanel();
+});
+
+document.getElementById("back-btn").addEventListener("click", async () => {
+  await setFeatured("");
+  refreshPanel();
+});
+
+/* Poll for updates so multiple devices stay in sync */
+setInterval(() => {
+  if(currentView() === "panel") refreshPanel();
+}, 2500);
+
+renderRoute();
+</script>
+</body>
+</html>
