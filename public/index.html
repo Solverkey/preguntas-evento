@@ -116,10 +116,10 @@ body.proyeccion-on{background:var(--neutral-900)}
   background-size:26px 26px;
   color:var(--cream);
   min-height:calc(100vh - 62px);
+  min-height:calc(100dvh - 62px);
   padding:56px 24px 64px;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:44px;
 }
-body.proyeccion-on #view-proyeccion .inner{min-height:100vh}
 .proy-eyebrow{display:flex; align-items:center; gap:14px}
 .proy-eyebrow .dot{width:9px; height:9px; border-radius:99px; background:var(--coral-500); animation:pulseDot 2s infinite}
 .proy-eyebrow span{font-family:ui-monospace,Menlo,monospace; font-size:12px; letter-spacing:.16em; color:var(--neutral-500)}
@@ -224,14 +224,13 @@ body.proyeccion-on #view-proyeccion .inner{min-height:100vh}
 <script>
 function currentView(){
   const path = location.pathname.replace(/\/+$/, "") || "/";
-  if(path === "/proyeccion" || location.hash === "#proyeccion") return "proyeccion";
+  if(path === "/proyeccion") return "proyeccion";
   return "asistente";
 }
 
 function renderRoute(){
   const v = currentView();
   document.body.classList.toggle("proyeccion-on", v === "proyeccion");
-  document.getElementById("topbar").style.display = v === "proyeccion" ? "none" : "";
   document.getElementById("view-asistente").classList.toggle("active", v === "asistente");
   document.getElementById("view-proyeccion").classList.toggle("active", v === "proyeccion");
   refreshAll();
