@@ -451,8 +451,19 @@ function cardRespondida(q){
     </div>`;
 }
 
+let lastModSnap = "";
+function modSnapshot(list){
+  return list
+    .filter((q) => q.status !== "descartada")
+    .map((q) => q.id + ":" + q.status)
+    .join("|");
+}
+
 async function refreshModeracion(){
   const list = await getQuestions();
+  const snap = modSnapshot(list);
+  if(snap === lastModSnap) return;
+  lastModSnap = snap;
   const pendientes = list.filter((q) => q.status === "pendiente").sort((a,b) => a.ts - b.ts);
   const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
   const respondidas = list.filter((q) => q.status === "respondida").sort((a,b) => b.ts - a.ts);
@@ -580,9 +591,17 @@ async function refreshAll(){
 
 if(window.EventSource){
   const es = new EventSource("/api/stream");
-  es.onmessage = () => refreshAll();
+  es.onmessage = (ev) => {
+    let data = {};
+    try{ data = JSON.parse(ev.data); }catch(e){}
+    if(data.type === "hello") return;
+    if(currentView() === "moderacion" && data.type !== "new") return;
+    refreshAll();
+  };
 }
-setInterval(refreshAll, 4000);
+setInterval(() => {
+  if(currentView() === "proyeccion") refreshProyeccion();
+}, 4000);
 renderRoute();
 </script>
 </body>

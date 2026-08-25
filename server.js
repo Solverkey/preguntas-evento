@@ -21,8 +21,8 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-function broadcast() {
-  const payload = `data: ${JSON.stringify({ type: "update" })}\n\n`;
+function broadcast(type) {
+  const payload = `data: ${JSON.stringify({ type: type || "update" })}\n\n`;
   for (const client of sseClients) {
     try {
       client.write(payload);
@@ -84,7 +84,7 @@ app.post("/api/questions", async (req, res) => {
       "INSERT INTO questions (id, text, ts, status) VALUES ($1, $2, $3, $4)",
       [q.id, q.text, q.ts, q.status]
     );
-    broadcast();
+    broadcast("new");
     res.json(q);
   } catch (e) {
     console.error(e);
