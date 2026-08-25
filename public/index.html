@@ -23,6 +23,7 @@
   --coral-50:#FDEEF0; --coral-100:#F9D6DB;
   --coral-500:#DA4A5E; --coral-600:#C23B50;
   --green-500:#22A06B; --green-700:#157A50;
+  --amber:#F0A02E;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;color-scheme:light}
@@ -161,6 +162,46 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 .proy-foot img{height:16px; display:block; opacity:.7}
 .proy-foot span{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.1em; color:var(--neutral-700)}
 
+#view-moderacion .inner{max-width:1280px; margin:0 auto; padding:36px 32px 64px}
+.mod-head{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:26px; flex-wrap:wrap}
+.mod-head h1{font-family:'Spartan',sans-serif; font-weight:700; font-size:34px; line-height:1.1; letter-spacing:-0.02em; margin:0 0 8px}
+.mod-head p{margin:0; font-size:14px; color:var(--neutral-600)}
+.mod-stats{display:flex; gap:10px; flex-wrap:wrap}
+.mod-stat{background:#fff; border:1px solid var(--neutral-200); border-radius:12px; padding:12px 18px; min-width:104px}
+.mod-stat .n{font-family:'Spartan',sans-serif; font-weight:700; font-size:24px; line-height:1}
+.mod-stat .n.coral{color:var(--coral-500)}
+.mod-stat .n.green{color:var(--green-700)}
+.mod-stat .l{font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.1em; color:var(--neutral-500); margin-top:4px}
+.mod-cols{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:start}
+.mod-col{background:#fff; border:1px solid var(--neutral-200); border-radius:16px; overflow:hidden}
+.mod-col.live{border-color:#F1A9B2; box-shadow:0 4px 14px rgba(218,74,94,.08)}
+.mod-col-h{padding:16px 18px; border-bottom:1px solid var(--neutral-100); display:flex; align-items:center; gap:9px}
+.mod-col.live .mod-col-h{border-bottom-color:var(--coral-50)}
+.mod-col-h .dot{width:7px; height:7px; border-radius:99px}
+.mod-col-h .dot.amber{background:var(--amber)}
+.mod-col-h .dot.coral{background:var(--coral-500); animation:pulseDot 2s infinite}
+.mod-col-h .dot.green{background:var(--green-500)}
+.mod-col-h span:last-child{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.12em; color:var(--neutral-700)}
+.mod-col.live .mod-col-h span:last-child{color:var(--coral-600)}
+.mod-col-b{display:flex; flex-direction:column; gap:12px; padding:16px}
+.mod-card{border:1px solid var(--neutral-200); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:12px; animation:fadeUp .25s ease both}
+.mod-card p{margin:0; font-size:14px; line-height:1.55; color:var(--neutral-900); text-wrap:pretty}
+.mod-card .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+.mod-card .hora{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-400)}
+.mod-card .acts{display:flex; gap:8px}
+.mod-card.live{border-color:var(--coral-100); background:var(--coral-50)}
+.mod-card.done{border-color:var(--neutral-100); background:var(--neutral-50); gap:8px; padding:13px 14px}
+.mod-card.done p{font-size:13.5px; line-height:1.5; color:var(--neutral-600)}
+.mod-empty{margin:0; padding:18px 4px; font-size:13px; color:var(--neutral-400); text-align:center}
+.btn-ghost{border:1px solid var(--neutral-300); background:#fff; color:var(--neutral-600); border-radius:9px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer}
+.btn-ghost:hover{background:var(--neutral-100); color:var(--neutral-900)}
+.btn-coral{border:none; background:var(--coral-500); color:#fff; border-radius:9px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer}
+.btn-coral:hover{background:var(--coral-600)}
+.btn-link{border:none; background:transparent; color:var(--neutral-600); font-size:12.5px; font-weight:600; cursor:pointer; padding:0; text-decoration:underline}
+.btn-link:hover{color:var(--neutral-900)}
+.btn-ok{border:1px solid var(--green-500); background:#fff; color:var(--green-700); border-radius:9px; padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer}
+.btn-ok:hover{background:#E9F6EF}
+
 @media (max-width:640px){
   .topbar-inner{padding:10px 16px; height:auto; gap:10px}
   .brand span,.live-pill{display:none}
@@ -175,6 +216,9 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
   .proy-nav{flex-wrap:wrap; justify-content:center}
   .proy-foot span{display:none}
   #view-proyeccion .inner{padding:40px 16px 48px; gap:28px}
+  #view-moderacion .inner{padding:24px 16px 48px}
+  .mod-head h1{font-size:28px}
+  .mod-cols{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -201,7 +245,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
             <svg viewBox="0 0 240 14" preserveAspectRatio="none"><path d="M3 10 C 40 3, 80 12, 120 7 S 200 4, 237 8" fill="none" stroke="#DA4A5E" stroke-width="4" stroke-linecap="round"></path></svg>
           </span>
         </h1>
-        <p class="asis-sub">Escribe tu pregunta y aparecerá en la pantalla de la sala. No hace falta dar tu nombre.</p>
+        <p class="asis-sub">Escribe tu pregunta. El equipo la pasará a la pantalla de la sala. No hace falta dar tu nombre.</p>
       </div>
       <div class="asis-card" id="form-card">
         <label>TU PREGUNTA</label>
@@ -213,8 +257,38 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
       </div>
       <div class="asis-card thanks-card" id="thanks-card">
         <h2>¡Gracias!</h2>
-        <p>Tu pregunta ya está en la pantalla de la sala. ¿Quieres hacer otra?</p>
+        <p>Tu pregunta ya ha llegado. En cuanto se apruebe, saldrá en la pantalla de la sala. ¿Quieres hacer otra?</p>
         <button id="otra-btn" type="button">Hacer otra pregunta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="view-moderacion" class="view">
+  <div class="inner">
+    <div class="mod-head">
+      <div>
+        <h1>Moderación</h1>
+        <p>Filtra lo que llega y decide qué se ve en la pantalla de la sala.</p>
+      </div>
+      <div class="mod-stats">
+        <div class="mod-stat"><div class="n" id="n-entrantes">0</div><div class="l">ENTRANTES</div></div>
+        <div class="mod-stat"><div class="n coral" id="n-pantalla">0</div><div class="l">EN PANTALLA</div></div>
+        <div class="mod-stat"><div class="n green" id="n-respondidas">0</div><div class="l">RESPONDIDAS</div></div>
+      </div>
+    </div>
+    <div class="mod-cols">
+      <div class="mod-col">
+        <div class="mod-col-h"><span class="dot amber"></span><span>ENTRANTES</span></div>
+        <div class="mod-col-b" id="col-entrantes"></div>
+      </div>
+      <div class="mod-col live">
+        <div class="mod-col-h"><span class="dot coral"></span><span>EN PANTALLA</span></div>
+        <div class="mod-col-b" id="col-pantalla"></div>
+      </div>
+      <div class="mod-col">
+        <div class="mod-col-h"><span class="dot green"></span><span>RESPONDIDAS</span></div>
+        <div class="mod-col-b" id="col-respondidas"></div>
       </div>
     </div>
   </div>
@@ -247,6 +321,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 function currentView(){
   const path = location.pathname.replace(/\/+$/, "") || "/";
   if(path === "/proyeccion") return "proyeccion";
+  if(path === "/moderacion") return "moderacion";
   return "asistente";
 }
 
@@ -254,6 +329,7 @@ function renderRoute(){
   const v = currentView();
   document.body.classList.toggle("proyeccion-on", v === "proyeccion");
   document.getElementById("view-asistente").classList.toggle("active", v === "asistente");
+  document.getElementById("view-moderacion").classList.toggle("active", v === "moderacion");
   document.getElementById("view-proyeccion").classList.toggle("active", v === "proyeccion");
   refreshAll();
 }
@@ -335,6 +411,75 @@ sendBtn.addEventListener("click", async () => {
 });
 document.getElementById("otra-btn").addEventListener("click", mostrarFormulario);
 
+function hora(ts){
+  const d = new Date(Number(ts));
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
+const colEntrantes = document.getElementById("col-entrantes");
+const colPantalla = document.getElementById("col-pantalla");
+const colRespondidas = document.getElementById("col-respondidas");
+
+function cardEntrante(q){
+  return `
+    <div class="mod-card">
+      <p>${escapeHtml(q.text)}</p>
+      <div class="row">
+        <span class="hora">${hora(q.ts)}</span>
+        <div class="acts">
+          <button class="btn-ghost" type="button" data-id="${q.id}" data-status="descartada">Descartar</button>
+          <button class="btn-coral" type="button" data-id="${q.id}" data-status="pantalla">A pantalla</button>
+        </div>
+      </div>
+    </div>`;
+}
+function cardPantalla(q){
+  return `
+    <div class="mod-card live">
+      <p>${escapeHtml(q.text)}</p>
+      <div class="row">
+        <button class="btn-link" type="button" data-id="${q.id}" data-status="pendiente">Quitar</button>
+        <button class="btn-ok" type="button" data-id="${q.id}" data-status="respondida">Respondida</button>
+      </div>
+    </div>`;
+}
+function cardRespondida(q){
+  return `
+    <div class="mod-card done">
+      <p>${escapeHtml(q.text)}</p>
+      <span class="hora">${hora(q.ts)}</span>
+    </div>`;
+}
+
+async function refreshModeracion(){
+  const list = await getQuestions();
+  const pendientes = list.filter((q) => q.status === "pendiente").sort((a,b) => a.ts - b.ts);
+  const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
+  const respondidas = list.filter((q) => q.status === "respondida").sort((a,b) => b.ts - a.ts);
+
+  document.getElementById("n-entrantes").textContent = pendientes.length;
+  document.getElementById("n-pantalla").textContent = pantalla.length;
+  document.getElementById("n-respondidas").textContent = respondidas.length;
+
+  colEntrantes.innerHTML = pendientes.length
+    ? pendientes.map(cardEntrante).join("")
+    : '<p class="mod-empty">Nada por revisar ahora mismo.</p>';
+  colPantalla.innerHTML = pantalla.length
+    ? pantalla.map(cardPantalla).join("")
+    : '<p class="mod-empty">La pantalla está esperando la siguiente pregunta.</p>';
+  colRespondidas.innerHTML = respondidas.length
+    ? respondidas.map(cardRespondida).join("")
+    : '<p class="mod-empty">Aún no se ha respondido ninguna.</p>';
+}
+
+document.getElementById("view-moderacion").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-id][data-status]");
+  if(!btn) return;
+  btn.disabled = true;
+  await setStatus(btn.dataset.id, btn.dataset.status);
+  refreshModeracion();
+});
+
 const proyBubbleArea = document.getElementById("proy-bubble-area");
 const proyContador = document.getElementById("proy-contador");
 const proyCola = document.getElementById("proy-cola");
@@ -357,6 +502,7 @@ function pintarBocadillo(q, anim){
 async function refreshProyeccion(){
   if(proySaliendo) return;
   const list = await getQuestions();
+  const pendientes = list.filter((q) => q.status === "pendiente");
   const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
   const respondidas = list.filter((q) => q.status === "respondida");
   const destacada = pantalla[0];
@@ -368,7 +514,12 @@ async function refreshProyeccion(){
     }
   } else {
     lastDestacadaId = null;
-    proyBubbleArea.innerHTML = '<p class="proy-vacio">Esperando la primera pregunta de la sala.</p>';
+    const vacio = pendientes.length
+      ? (pendientes.length === 1
+        ? "Hay una pregunta esperando aprobación."
+        : "Hay " + pendientes.length + " preguntas esperando aprobación.")
+      : "Esperando la primera pregunta de la sala.";
+    proyBubbleArea.innerHTML = '<p class="proy-vacio">' + vacio + '</p>';
   }
 
   proyContador.textContent = pantalla.length
@@ -376,7 +527,9 @@ async function refreshProyeccion(){
     : (respondidas.length ? "fin · " + respondidas.length + " vistas" : "sin preguntas");
   proyCola.textContent = pantalla.length > 1
     ? (pantalla.length - 1) + " en cola"
-    : (pantalla.length === 1 ? "última en pantalla" : "nada en pantalla");
+    : (pantalla.length === 1
+      ? "última en pantalla"
+      : (pendientes.length ? pendientes.length + " por aprobar" : "nada en pantalla"));
   btnAtras.disabled = respondidas.length === 0;
   btnAvanzar.disabled = pantalla.length === 0;
 }
@@ -420,7 +573,9 @@ window.addEventListener("keydown", (e) => {
 });
 
 async function refreshAll(){
-  if(currentView() === "proyeccion") refreshProyeccion();
+  const v = currentView();
+  if(v === "proyeccion") refreshProyeccion();
+  if(v === "moderacion") refreshModeracion();
 }
 
 if(window.EventSource){

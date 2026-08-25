@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json({ limit: "32kb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
-const ESTADOS_VALIDOS = ["pantalla", "respondida"];
+const ESTADOS_VALIDOS = ["pendiente", "pantalla", "respondida", "descartada"];
 const sseClients = new Set();
 
 function uid() {
@@ -38,11 +38,11 @@ async function initDb() {
       id TEXT PRIMARY KEY,
       text TEXT NOT NULL,
       ts BIGINT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pantalla'
+      status TEXT NOT NULL DEFAULT 'pendiente'
     );
   `);
   await pool.query(
-    `ALTER TABLE questions ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pantalla';`
+    `ALTER TABLE questions ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pendiente';`
   );
 }
 
@@ -78,7 +78,7 @@ app.post("/api/questions", async (req, res) => {
     return res.status(400).json({ error: "Pregunta demasiado larga" });
   }
 
-  const q = { id: uid(), text, ts: Date.now(), status: "pantalla" };
+  const q = { id: uid(), text, ts: Date.now(), status: "pendiente" };
   try {
     await pool.query(
       "INSERT INTO questions (id, text, ts, status) VALUES ($1, $2, $3, $4)",
@@ -111,6 +111,10 @@ app.post("/api/questions/:id/status", async (req, res) => {
     console.error(e);
     res.status(500).json({ error: "No se pudo actualizar la pregunta" });
   }
+});
+
+app.get("/moderacion", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.get("/proyeccion", (req, res) => {
