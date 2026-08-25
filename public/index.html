@@ -48,8 +48,11 @@ body.proyeccion-on{background:var(--neutral-900)}
   max-width:1280px; margin:0 auto; padding:0 32px; height:62px;
   display:flex; align-items:center; justify-content:space-between; gap:16px;
 }
-.brand{display:flex; align-items:baseline; gap:10px; min-width:0; flex-shrink:0}
+.brand{display:flex; align-items:baseline; gap:10px; min-width:0; flex-shrink:0; position:relative}
 .brand img{height:18px; display:block}
+.brand .logo-coral{display:none}
+body.proyeccion-on .brand .logo-negro{display:none}
+body.proyeccion-on .brand .logo-coral{display:block}
 .brand span{font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.14em; color:var(--neutral-500); white-space:nowrap}
 .live-pill{
   display:flex; align-items:center; gap:10px; font-family:ui-monospace,Menlo,monospace;
@@ -180,7 +183,8 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 <div class="topbar" id="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <img src="/assets/skai-logo.svg" alt="SKAI" />
+      <img class="logo-negro" src="/assets/skai-logo.svg" alt="SKAI" />
+      <img class="logo-coral" src="/assets/skai-logo-coral.svg" alt="SKAI" />
       <span>PREGUNTAS EN DIRECTO</span>
     </div>
     <div class="live-pill"><span class="dot"></span>EN DIRECTO</div>
@@ -233,7 +237,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
       <button class="proy-btn proy-btn-avanzar" id="btn-avanzar" type="button">Respondida · siguiente</button>
     </div>
     <div class="proy-foot">
-      <img src="/assets/skai-logo.svg" alt="SKAI" />
+      <img src="/assets/skai-logo-coral.svg" alt="SKAI" />
       <span>ESPACIO O ← → PARA NAVEGAR</span>
     </div>
   </div>
