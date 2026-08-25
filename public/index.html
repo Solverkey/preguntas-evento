@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Preguntas en directo · SKAI</title>
+<style>
+@font-face{font-family:"Spartan";src:url("/fonts/Spartan-300.ttf") format("truetype");font-weight:300;font-display:swap}
+@font-face{font-family:"Spartan";src:url("/fonts/Spartan-500.ttf") format("truetype");font-weight:500;font-display:swap}
+@font-face{font-family:"Spartan";src:url("/fonts/Spartan-700.ttf") format("truetype");font-weight:700;font-display:swap}
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-400.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-500.ttf") format("truetype");font-weight:500;font-display:swap}
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-600.ttf") format("truetype");font-weight:600;font-display:swap}
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-700.ttf") format("truetype");font-weight:700;font-display:swap}
+
+:root{
+  --cream:#FAF9F5;
+  --neutral-50:#F7F6F3; --neutral-100:#F2F1ED; --neutral-200:#E9E7E2; --neutral-300:#DAD7D1;
+  --neutral-400:#B7B2AA; --neutral-500:#8C877F; --neutral-600:#6B665F; --neutral-700:#494540;
+  --neutral-800:#2B2825; --neutral-900:#191413;
+  --coral-50:#FDEEF0; --coral-100:#F9D6DB;
+  --coral-500:#DA4A5E; --coral-600:#C23B50;
+  --green-500:#22A06B; --green-700:#157A50;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--neutral-900);font-family:'Poppins',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+textarea,input,button{font-family:'Poppins',sans-serif}
+::selection{background:var(--coral-100)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes subeEntra{from{opacity:0;transform:translateY(80px)}to{opacity:1;transform:translateY(0)}}
+@keyframes subeSale{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-90px)}}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}
+
+.view{display:none}
+.view.active{display:block}
+body.proyeccion-on{background:var(--neutral-900)}
+
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(250,249,245,.94); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--neutral-200);
+}
+.topbar-inner{
+  max-width:1280px; margin:0 auto; padding:0 32px; height:62px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.brand{display:flex; align-items:baseline; gap:10px; min-width:0; flex-shrink:0}
+.brand img{height:18px; display:block}
+.brand span{font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.14em; color:var(--neutral-500); white-space:nowrap}
+.tabs{
+  display:flex; align-items:center; gap:4px; background:var(--neutral-100);
+  border:1px solid var(--neutral-200); border-radius:999px; padding:4px;
+}
+.tab-btn{
+  border:none; cursor:pointer; border-radius:999px; padding:8px 17px;
+  font-size:13px; font-weight:600; background:transparent; color:var(--neutral-600);
+}
+.tab-btn.active{background:var(--neutral-900); color:#fff}
+.live-pill{
+  display:flex; align-items:center; gap:10px; font-family:ui-monospace,Menlo,monospace;
+  font-size:11px; color:var(--neutral-600); white-space:nowrap;
+}
+.live-pill .dot{width:7px; height:7px; border-radius:99px; background:var(--green-500); animation:pulseDot 2s infinite}
+
+#view-asistente .inner{
+  background-image:radial-gradient(var(--neutral-200) 1px,transparent 1px);
+  background-size:26px 26px;
+  min-height:calc(100vh - 62px);
+  display:flex; justify-content:center;
+  padding:56px 24px 80px;
+}
+.asis-wrap{width:100%; max-width:460px; display:flex; flex-direction:column; gap:20px}
+.asis-hero{display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px}
+.live-badge{
+  display:inline-flex; align-items:center; gap:8px; border:1px solid var(--neutral-200);
+  background:#fff; border-radius:999px; padding:6px 14px;
+  font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.06em; color:var(--neutral-600);
+}
+.live-badge .dot{width:7px; height:7px; border-radius:99px; background:var(--coral-500); animation:pulseDot 2s infinite}
+.asis-title{font-family:'Spartan',sans-serif; font-weight:700; font-size:38px; line-height:1.05; letter-spacing:-0.025em; margin:0; text-wrap:balance}
+.underline{position:relative; display:inline-block; white-space:nowrap}
+.underline svg{position:absolute; left:0; bottom:-8px; width:100%; height:12px}
+.asis-sub{font-size:14.5px; line-height:1.6; color:var(--neutral-600); margin:0; max-width:340px}
+.asis-card{
+  background:#fff; border:1px solid var(--neutral-200); border-radius:16px; padding:22px;
+  box-shadow:0 4px 14px rgba(25,20,19,.05);
+  display:flex; flex-direction:column; gap:14px;
+}
+.asis-card label{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.12em; color:var(--neutral-500)}
+#q-input{
+  width:100%; min-height:120px; resize:vertical; border:1px solid var(--neutral-300);
+  border-radius:12px; padding:14px 15px; font-size:15px; line-height:1.55;
+  color:var(--neutral-900); background:var(--cream); outline:none;
+}
+#q-input:focus{border-color:var(--coral-500); background:#fff}
+.asis-row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.char-count{font-family:ui-monospace,Menlo,monospace; font-size:11px; color:var(--neutral-400)}
+#send-btn{
+  border:none; border-radius:11px; padding:12px 22px; font-size:14px; font-weight:600;
+  background:var(--neutral-200); color:var(--neutral-400); cursor:pointer;
+}
+#send-btn.ready{background:var(--coral-500); color:#fff}
+#send-btn.ready:hover{background:var(--coral-600)}
+.send-error{margin:0; font-size:12.5px; color:var(--coral-600); display:none}
+.mias-block{display:flex; flex-direction:column; gap:10px}
+.mias-title{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.12em; color:var(--neutral-500); padding:0 4px}
+.mia-card{
+  background:#fff; border:1px solid var(--neutral-200); border-radius:14px; padding:15px 16px;
+  display:flex; flex-direction:column; gap:10px; animation:fadeUp .3s ease both;
+}
+.mia-card p{margin:0; font-size:14.5px; line-height:1.55}
+.mia-meta{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.badge{display:inline-flex; border-radius:999px; padding:4px 11px; font-size:11px; font-weight:600}
+.badge-pantalla{background:var(--coral-50); color:var(--coral-600)}
+.badge-respondida{background:#E9F6EF; color:var(--green-700)}
+.mia-time{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-400)}
+
+#view-proyeccion .inner{
+  background:var(--neutral-900);
+  background-image:radial-gradient(#332E2B 1px,transparent 1px);
+  background-size:26px 26px;
+  color:var(--cream);
+  min-height:calc(100vh - 62px);
+  padding:56px 24px 64px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:44px;
+}
+body.proyeccion-on #view-proyeccion .inner{min-height:100vh}
+.proy-eyebrow{display:flex; align-items:center; gap:14px}
+.proy-eyebrow .dot{width:9px; height:9px; border-radius:99px; background:var(--coral-500); animation:pulseDot 2s infinite}
+.proy-eyebrow span{font-family:ui-monospace,Menlo,monospace; font-size:12px; letter-spacing:.16em; color:var(--neutral-500)}
+.proy-stage{min-height:180px; width:100%; max-width:1000px; display:flex; justify-content:center}
+.proy-bubble-wrap{display:flex; flex-direction:column; align-items:flex-start; max-width:1000px; width:100%}
+.proy-bubble-wrap.entra{animation:subeEntra .45s cubic-bezier(.4,0,.2,1) both}
+.proy-bubble-wrap.sale{animation:subeSale .32s cubic-bezier(.4,0,.2,1) both}
+.proy-bubble{position:relative; background:var(--coral-500); color:#fff; border-radius:24px; padding:36px 44px}
+.proy-bubble p{margin:0; font-family:'Spartan',sans-serif; font-weight:500; font-size:clamp(26px,4vw,46px); line-height:1.22; letter-spacing:-0.015em}
+.proy-bubble-tail{position:absolute; left:34px; bottom:-20px; width:34px; height:22px; background:var(--coral-500); clip-path:polygon(0 0,100% 0,22% 100%)}
+.proy-vacio{margin:0; font-family:'Spartan',sans-serif; font-weight:300; font-size:clamp(22px,3.5vw,40px); line-height:1.2; color:var(--neutral-600); max-width:16em; text-align:center}
+.proy-nav{display:flex; align-items:center; gap:18px; margin-top:4px}
+.proy-btn{border-radius:10px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer}
+.proy-btn-atras{border:1px solid var(--neutral-800); background:transparent; color:var(--neutral-500)}
+.proy-btn-atras:disabled{color:#3A3532; cursor:default}
+.proy-btn-avanzar{border:none; background:var(--coral-500); color:#fff}
+.proy-btn-avanzar:disabled{background:var(--neutral-800); color:var(--neutral-600); cursor:default}
+.proy-counter{display:flex; flex-direction:column; align-items:center; gap:4px; min-width:130px}
+.proy-counter .n{font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.14em; color:var(--neutral-500)}
+.proy-counter .cola{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-600)}
+.proy-foot{display:flex; align-items:center; gap:10px}
+.proy-foot img{height:16px; display:block; filter:brightness(0) invert(1); opacity:.4}
+.proy-foot span{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.1em; color:var(--neutral-700)}
+
+@media (max-width:640px){
+  .topbar-inner{padding:10px 16px; height:auto; flex-wrap:wrap; gap:10px}
+  .brand span,.live-pill{display:none}
+  .tabs{order:3; width:100%; justify-content:center}
+  #view-asistente .inner{padding:32px 16px 56px}
+  .asis-title{font-size:29px}
+  .asis-card{padding:16px}
+  #q-input{min-height:100px; font-size:16px}
+  .asis-row{flex-direction:column; align-items:stretch}
+  #send-btn{width:100%; padding:13px 22px}
+  .char-count{text-align:right}
+  .proy-bubble{padding:26px 28px}
+  .proy-nav{flex-wrap:wrap; justify-content:center}
+  .proy-foot span{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img src="/assets/skai-logo.svg" alt="SKAI" />
+      <span>PREGUNTAS EN DIRECTO</span>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn" id="tab-asistente" type="button">Asistente</button>
+      <button class="tab-btn" id="tab-proyeccion" type="button">Proyección</button>
+    </div>
+    <div class="live-pill"><span class="dot"></span>EN DIRECTO</div>
+  </div>
+</div>
+
+<div id="view-asistente" class="view">
+  <div class="inner">
+    <div class="asis-wrap">
+      <div class="asis-hero">
+        <div class="live-badge"><span class="dot"></span>PRESENTACIÓN SKAI · EN CURSO</div>
+        <h1 class="asis-title">Pregunta lo
+          <span class="underline">que quieras.
+            <svg viewBox="0 0 240 14" preserveAspectRatio="none"><path d="M3 10 C 40 3, 80 12, 120 7 S 200 4, 237 8" fill="none" stroke="#DA4A5E" stroke-width="4" stroke-linecap="round"></path></svg>
+          </span>
+        </h1>
+        <p class="asis-sub">Escribe tu pregunta y aparecerá en la pantalla de la sala. No hace falta dar tu nombre.</p>
+      </div>
+      <div class="asis-card">
+        <label>TU PREGUNTA</label>
+        <textarea id="q-input" maxlength="240" placeholder="¿Cómo distingue SKAI una llamada de un cliente real de una comercial?"></textarea>
+        <div class="asis-row">
+          <span class="char-count"><span id="char-n">240</span> / 240</span>
+          <button id="send-btn" type="button">Enviar pregunta</button>
+        </div>
+        <p class="send-error" id="send-error"></p>
+      </div>
+      <div class="mias-block" id="mias-block" style="display:none">
+        <div class="mias-title">MIS PREGUNTAS</div>
+        <div id="mias-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="view-proyeccion" class="view">
+  <div class="inner">
+    <div class="proy-eyebrow"><span class="dot"></span><span>PREGUNTAS DE LA SALA · EN DIRECTO</span></div>
+    <div class="proy-stage" id="proy-bubble-area"></div>
+    <div class="proy-nav">
+      <button class="proy-btn proy-btn-atras" id="btn-atras" type="button">Anterior</button>
+      <div class="proy-counter">
+        <span class="n" id="proy-contador">sin preguntas</span>
+        <span class="cola" id="proy-cola"></span>
+      </div>
+      <button class="proy-btn proy-btn-avanzar" id="btn-avanzar" type="button">Respondida · siguiente</button>
+    </div>
+    <div class="proy-foot">
+      <img src="/assets/skai-logo.svg" alt="SKAI" />
+      <span>ESPACIO O ← → PARA NAVEGAR</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const MIAS_KEY = "skai-mias-ids";
+
+function currentView(){
+  const path = location.pathname.replace(/\/+$/, "") || "/";
+  if(path === "/proyeccion" || location.hash === "#proyeccion") return "proyeccion";
+  return "asistente";
+}
+
+function go(view){
+  if(view === "proyeccion") history.replaceState(null, "", "/proyeccion");
+  else history.replaceState(null, "", "/");
+  renderRoute();
+}
+
+function renderRoute(){
+  const v = currentView();
+  document.body.classList.toggle("proyeccion-on", v === "proyeccion");
+  document.getElementById("topbar").style.display = v === "proyeccion" ? "none" : "";
+  document.getElementById("view-asistente").classList.toggle("active", v === "asistente");
+  document.getElementById("view-proyeccion").classList.toggle("active", v === "proyeccion");
+  document.getElementById("tab-asistente").classList.toggle("active", v === "asistente");
+  document.getElementById("tab-proyeccion").classList.toggle("active", v === "proyeccion");
+  refreshAll();
+}
+
+document.getElementById("tab-asistente").onclick = () => go("asistente");
+document.getElementById("tab-proyeccion").onclick = () => go("proyeccion");
+
+async function getQuestions(){
+  try{
+    const r = await fetch("/api/questions");
+    return await r.json();
+  }catch(e){ return []; }
+}
+async function addQuestion(text){
+  const r = await fetch("/api/questions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+  const data = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(data.error || "No se pudo enviar la pregunta");
+  return data;
+}
+async function setStatus(id, status){
+  await fetch("/api/questions/" + id + "/status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status })
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+function timeAgo(ts){
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if(s < 60) return "ahora mismo";
+  const m = Math.floor(s / 60);
+  if(m < 60) return "hace " + m + " min";
+  return "hace " + Math.floor(m / 60) + " h";
+}
+function getMiasIds(){
+  try{ return JSON.parse(localStorage.getItem(MIAS_KEY) || "[]"); }catch(e){ return []; }
+}
+function addMiaId(id){
+  const ids = getMiasIds();
+  ids.unshift(id);
+  try{ localStorage.setItem(MIAS_KEY, JSON.stringify(ids.slice(0, 20))); }catch(e){}
+}
+
+const qInput = document.getElementById("q-input");
+const charN = document.getElementById("char-n");
+const sendBtn = document.getElementById("send-btn");
+const sendError = document.getElementById("send-error");
+const miasBlock = document.getElementById("mias-block");
+const miasList = document.getElementById("mias-list");
+
+function updateCharCount(){
+  charN.textContent = 240 - qInput.value.length;
+  const ready = qInput.value.trim().length > 2;
+  sendBtn.classList.toggle("ready", ready);
+  sendBtn.disabled = !ready;
+}
+qInput.addEventListener("input", updateCharCount);
+qInput.addEventListener("keydown", (e) => {
+  if((e.metaKey || e.ctrlKey) && e.key === "Enter") sendBtn.click();
+});
+updateCharCount();
+
+sendBtn.addEventListener("click", async () => {
+  const text = qInput.value.trim();
+  if(text.length < 3) return;
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Enviando...";
+  sendError.style.display = "none";
+  try{
+    const q = await addQuestion(text);
+    addMiaId(q.id);
+    qInput.value = "";
+    refreshMias();
+  }catch(e){
+    sendError.textContent = e.message || "No se pudo enviar. Prueba de nuevo.";
+    sendError.style.display = "block";
+  }
+  sendBtn.textContent = "Enviar pregunta";
+  updateCharCount();
+});
+
+async function refreshMias(){
+  const ids = getMiasIds();
+  if(!ids.length){ miasBlock.style.display = "none"; return; }
+  const list = await getQuestions();
+  const byId = Object.fromEntries(list.map((q) => [q.id, q]));
+  const rows = ids.map((id) => byId[id]).filter(Boolean);
+  if(!rows.length){ miasBlock.style.display = "none"; return; }
+  miasBlock.style.display = "flex";
+  miasList.innerHTML = rows.map((q) => `
+    <div class="mia-card">
+      <p>${escapeHtml(q.text)}</p>
+      <div class="mia-meta">
+        <span class="badge ${q.status === "respondida" ? "badge-respondida" : "badge-pantalla"}">
+          ${q.status === "respondida" ? "Respondida" : "En pantalla"}
+        </span>
+        <span class="mia-time">${timeAgo(q.ts)}</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+const proyBubbleArea = document.getElementById("proy-bubble-area");
+const proyContador = document.getElementById("proy-contador");
+const proyCola = document.getElementById("proy-cola");
+const btnAtras = document.getElementById("btn-atras");
+const btnAvanzar = document.getElementById("btn-avanzar");
+let proySaliendo = false;
+let lastDestacadaId = null;
+
+function pintarBocadillo(q, anim){
+  proyBubbleArea.innerHTML = `
+    <div class="proy-bubble-wrap ${anim}">
+      <div class="proy-bubble">
+        <p>${escapeHtml(q.text)}</p>
+        <div class="proy-bubble-tail"></div>
+      </div>
+    </div>
+  `;
+}
+
+async function refreshProyeccion(){
+  if(proySaliendo) return;
+  const list = await getQuestions();
+  const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
+  const respondidas = list.filter((q) => q.status === "respondida");
+  const destacada = pantalla[0];
+
+  if(destacada){
+    if(destacada.id !== lastDestacadaId){
+      lastDestacadaId = destacada.id;
+      pintarBocadillo(destacada, "entra");
+    }
+  } else {
+    lastDestacadaId = null;
+    proyBubbleArea.innerHTML = '<p class="proy-vacio">Esperando la primera pregunta de la sala.</p>';
+  }
+
+  proyContador.textContent = pantalla.length
+    ? (respondidas.length + 1) + " / " + (respondidas.length + pantalla.length)
+    : (respondidas.length ? "fin · " + respondidas.length + " vistas" : "sin preguntas");
+  proyCola.textContent = pantalla.length > 1
+    ? (pantalla.length - 1) + " en cola"
+    : (pantalla.length === 1 ? "última en pantalla" : "nada en pantalla");
+  btnAtras.disabled = respondidas.length === 0;
+  btnAvanzar.disabled = pantalla.length === 0;
+}
+
+async function avanzarProyeccion(){
+  const list = await getQuestions();
+  const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
+  const actual = pantalla[0];
+  if(!actual || proySaliendo) return;
+  proySaliendo = true;
+  const wrap = proyBubbleArea.querySelector(".proy-bubble-wrap");
+  if(wrap){
+    wrap.classList.remove("entra");
+    wrap.classList.add("sale");
+  }
+  setTimeout(async () => {
+    lastDestacadaId = null;
+    await setStatus(actual.id, "respondida");
+    proySaliendo = false;
+    refreshProyeccion();
+  }, 320);
+}
+
+async function retrocederProyeccion(){
+  const list = await getQuestions();
+  const respondidas = list.filter((q) => q.status === "respondida").sort((a,b) => b.ts - a.ts);
+  const previa = respondidas[0];
+  if(!previa || proySaliendo) return;
+  lastDestacadaId = null;
+  await setStatus(previa.id, "pantalla");
+  refreshProyeccion();
+}
+
+btnAvanzar.addEventListener("click", avanzarProyeccion);
+btnAtras.addEventListener("click", retrocederProyeccion);
+window.addEventListener("keydown", (e) => {
+  if(currentView() !== "proyeccion") return;
+  if(e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+  if(e.key === "ArrowRight" || e.key === " "){ e.preventDefault(); avanzarProyeccion(); }
+  if(e.key === "ArrowLeft"){ e.preventDefault(); retrocederProyeccion(); }
+});
+
+async function refreshAll(){
+  if(currentView() === "asistente") refreshMias();
+  else refreshProyeccion();
+}
+
+if(window.EventSource){
+  const es = new EventSource("/api/stream");
+  es.onmessage = () => refreshAll();
+}
+setInterval(refreshAll, 4000);
+renderRoute();
+</script>
+</body>
+</html>
