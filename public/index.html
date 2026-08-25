@@ -428,6 +428,8 @@ function timeAgo(ts){
   return `hace ${h} h`;
 }
 
+let lastSignature = "";
+
 async function refreshPanel(){
   const [list, featuredId] = await Promise.all([getQuestions(), getFeatured()]);
 
@@ -436,19 +438,27 @@ async function refreshPanel(){
     if(q){
       queueView.style.display = "none";
       featuredView.classList.add("show");
-      featuredText.textContent = q.text;
+      if(featuredText.dataset.id !== q.id){
+        featuredText.textContent = q.text;
+        featuredText.dataset.id = q.id;
+      }
       return;
     }
   }
   featuredView.classList.remove("show");
+  featuredText.dataset.id = "";
   queueView.style.display = "block";
+
+  const sorted = [...list].sort((a,b) => b.ts - a.ts);
+  const signature = JSON.stringify(sorted.map(q => q.id));
+  if(signature === lastSignature) return; // nada nuevo, no repintar
+  lastSignature = signature;
 
   countPill.textContent = list.length;
   if(list.length === 0){
     queueList.innerHTML = `<div class="empty-state"><div class="big-q">?</div>Todavía no ha llegado ninguna pregunta</div>`;
     return;
   }
-  const sorted = [...list].sort((a,b) => b.ts - a.ts);
   queueList.innerHTML = sorted.map(q => `
     <div class="q-row" data-id="${q.id}">
       <div>
