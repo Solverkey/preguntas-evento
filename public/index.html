@@ -57,6 +57,13 @@ body.proyeccion-on{background:var(--neutral-900)}
 }
 .live-pill .dot{width:7px; height:7px; border-radius:99px; background:var(--green-500); animation:pulseDot 2s infinite}
 
+body.proyeccion-on .topbar{
+  background:rgba(25,20,19,.94);
+  border-bottom:1px solid #2B2825;
+}
+body.proyeccion-on .brand span{color:var(--neutral-500)}
+body.proyeccion-on .live-pill{color:var(--neutral-400)}
+
 #view-asistente .inner{
   background-image:radial-gradient(var(--neutral-200) 1px,transparent 1px);
   background-size:26px 26px;
@@ -120,9 +127,16 @@ body.proyeccion-on{background:var(--neutral-900)}
   padding:56px 24px 64px;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:44px;
 }
-.proy-eyebrow{display:flex; align-items:center; gap:14px}
-.proy-eyebrow .dot{width:9px; height:9px; border-radius:99px; background:var(--coral-500); animation:pulseDot 2s infinite}
-.proy-eyebrow span{font-family:ui-monospace,Menlo,monospace; font-size:12px; letter-spacing:.16em; color:var(--neutral-500)}
+.proy-eyebrow{
+  display:flex; align-items:center; justify-content:center;
+}
+.proy-eyebrow span{
+  position:relative; display:inline-block;
+  font-family:ui-monospace,Menlo,monospace; font-size:12px; letter-spacing:.16em; color:var(--cream);
+}
+.proy-eyebrow span svg{
+  position:absolute; left:0; bottom:-10px; width:100%; height:12px;
+}
 .proy-stage{min-height:180px; width:100%; max-width:1000px; display:flex; justify-content:center}
 .proy-bubble-wrap{display:flex; flex-direction:column; align-items:flex-start; max-width:1000px; width:100%}
 .proy-bubble-wrap.entra{animation:subeEntra .45s cubic-bezier(.4,0,.2,1) both}
@@ -141,7 +155,7 @@ body.proyeccion-on{background:var(--neutral-900)}
 .proy-counter .n{font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.14em; color:var(--neutral-500)}
 .proy-counter .cola{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-600)}
 .proy-foot{display:flex; align-items:center; gap:10px}
-.proy-foot img{height:16px; display:block; filter:brightness(0) invert(1); opacity:.4}
+.proy-foot img{height:16px; display:block; opacity:.7}
 .proy-foot span{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.1em; color:var(--neutral-700)}
 
 @media (max-width:640px){
@@ -204,7 +218,11 @@ body.proyeccion-on{background:var(--neutral-900)}
 
 <div id="view-proyeccion" class="view">
   <div class="inner">
-    <div class="proy-eyebrow"><span class="dot"></span><span>PREGUNTAS DE LA SALA · EN DIRECTO</span></div>
+    <div class="proy-eyebrow">
+      <span>PREGUNTAS DE LA SALA
+        <svg viewBox="0 0 240 14" preserveAspectRatio="none"><path d="M3 10 C 40 3, 80 12, 120 7 S 200 4, 237 8" fill="none" stroke="#DA4A5E" stroke-width="4" stroke-linecap="round"></path></svg>
+      </span>
+    </div>
     <div class="proy-stage" id="proy-bubble-area"></div>
     <div class="proy-nav">
       <button class="proy-btn proy-btn-atras" id="btn-atras" type="button">Anterior</button>
