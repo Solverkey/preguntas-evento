@@ -588,7 +588,6 @@ function pintarBocadillo(q, anim){
 async function refreshProyeccion(){
   if(proySaliendo) return;
   const list = await getQuestions();
-  const pendientes = list.filter((q) => q.status === "pendiente");
   const destacada = list.filter((q) => q.status === "pantalla").sort(ordenPantalla)[0] || null;
   const cola = list.filter((q) => q.status === "cola").sort(ordenPantalla);
   const respondidas = list.filter((q) => q.status === "respondida");
@@ -609,7 +608,7 @@ async function refreshProyeccion(){
     : (total ? "sala vacía · " + cola.length + " en cola" : "sin preguntas");
   proyCola.textContent = destacada
     ? (cola.length ? cola.length + " en cola" : "última en pantalla")
-    : (cola.length ? cola.length + " en cola" : (pendientes.length ? pendientes.length + " por aprobar" : "nada en pantalla"));
+    : (cola.length ? cola.length + " en cola" : "");
   btnAtras.disabled = respondidas.length === 0;
   btnAvanzar.disabled = !destacada;
 }
