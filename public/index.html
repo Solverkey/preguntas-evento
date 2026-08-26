@@ -162,7 +162,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 .proy-bubble{position:relative; background:var(--coral-500); color:#fff; border-radius:24px; padding:36px 44px}
 .proy-bubble p{margin:0; font-family:'Spartan',sans-serif; font-weight:500; font-size:clamp(26px,4vw,46px); line-height:1.22; letter-spacing:-0.015em; overflow-wrap:anywhere}
 .proy-bubble-tail{width:34px; height:20px; margin:-2px 0 0 34px; flex-shrink:0; background:var(--coral-500); clip-path:polygon(0 0,100% 0,22% 100%)}
-.proy-vacio{margin:0; font-family:'Spartan',sans-serif; font-weight:300; font-size:clamp(22px,3.5vw,40px); line-height:1.2; color:var(--neutral-600); max-width:16em; text-align:center}
+.proy-vacio{margin:0; font-family:'Spartan',sans-serif; font-weight:300; font-size:clamp(36px,6.5vw,88px); line-height:1.15; color:var(--neutral-600); max-width:14em; text-align:center}
 .proy-nav{display:flex; align-items:center; gap:18px; margin-top:4px}
 .proy-btn{border-radius:10px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer}
 .proy-btn-atras{border:1px solid var(--neutral-800); background:transparent; color:var(--neutral-500)}
@@ -501,7 +501,9 @@ function cardRespondida(q){
 
 let lastModSnap = "";
 const idsVistosMod = new Set();
+const nuevasHasta = new Map();
 let modCargaInicial = true;
+const NUEVA_MS = 30000;
 function modSnapshot(list){
   return list
     .filter((q) => q.status !== "descartada")
@@ -512,13 +514,24 @@ function modSnapshot(list){
 async function refreshModeracion(){
   const list = await getQuestions();
   const snap = modSnapshot(list);
-  if(snap === lastModSnap) return;
+  const ahoraMs = Date.now();
+  const caducoNueva = [...nuevasHasta.values()].some((hasta) => hasta <= ahoraMs);
+  if(snap === lastModSnap && !caducoNueva) return;
   lastModSnap = snap;
   if(modCargaInicial){
     list.forEach((q) => idsVistosMod.add(q.id));
     modCargaInicial = false;
   }
+  for(const [id, hasta] of [...nuevasHasta]){
+    if(hasta <= ahoraMs) nuevasHasta.delete(id);
+  }
   const pendientes = list.filter((q) => q.status === "pendiente").sort((a,b) => a.ts - b.ts);
+  pendientes.forEach((q) => {
+    if(idsVistosMod.has(q.id)) return;
+    idsVistosMod.add(q.id);
+    nuevasHasta.set(q.id, ahoraMs + NUEVA_MS);
+    setTimeout(() => { lastModSnap = ""; refreshModeracion(); }, NUEVA_MS);
+  });
   const ahora = list.filter((q) => q.status === "pantalla").sort(ordenPantalla)[0] || null;
   const cola = list.filter((q) => q.status === "cola").sort(ordenPantalla);
   const respondidas = list.filter((q) => q.status === "respondida").sort((a,b) => b.ts - a.ts);
@@ -529,7 +542,7 @@ async function refreshModeracion(){
   document.getElementById("n-respondidas").textContent = respondidas.length;
 
   colEntrantes.innerHTML = pendientes.length
-    ? pendientes.map((q) => cardEntrante(q, !idsVistosMod.has(q.id))).join("")
+    ? pendientes.map((q) => cardEntrante(q, nuevasHasta.has(q.id))).join("")
     : '<p class="mod-empty">Nada por revisar ahora mismo.</p>';
 
   let htmlPantalla = "";
@@ -697,13 +710,10 @@ if(window.EventSource){
     let data = {};
     try{ data = JSON.parse(ev.data); }catch(e){}
     if(data.type === "hello") return;
-    if(currentView() === "moderacion" && data.type !== "new") return;
     refreshAll();
   };
 }
-setInterval(() => {
-  if(currentView() === "proyeccion") refreshProyeccion();
-}, 4000);
+setInterval(refreshAll, 4000);
 renderRoute();
 </script>
 </body>
