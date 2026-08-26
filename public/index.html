@@ -587,17 +587,7 @@ async function refreshProyeccion(){
     }
   } else {
     lastDestacadaId = null;
-    let vacio = "La sala está vacía.";
-    if(cola.length){
-      vacio = cola.length === 1
-        ? "Hay una pregunta en cola."
-        : "Hay " + cola.length + " preguntas en cola.";
-    } else if(pendientes.length){
-      vacio = pendientes.length === 1
-        ? "Hay una pregunta esperando aprobación."
-        : "Hay " + pendientes.length + " preguntas esperando aprobación.";
-    }
-    proyBubbleArea.innerHTML = '<p class="proy-vacio">' + vacio + '</p>';
+    proyBubbleArea.innerHTML = '<p class="proy-vacio">¿Te atreves?</p>';
   }
 
   const total = respondidas.length + (destacada ? 1 : 0) + cola.length;
