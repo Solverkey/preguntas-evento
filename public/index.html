@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light" />
 <meta name="theme-color" content="#FAF9F5" />
+<link rel="icon" type="image/png" href="/assets/favicon.png" />
 <title>Preguntas en directo · SKAI</title>
 <style>
 @font-face{font-family:"Spartan";src:url("/fonts/Spartan-300.ttf") format("truetype");font-weight:300;font-display:swap}
@@ -40,6 +41,7 @@ textarea,input,button{font-family:'Poppins',sans-serif}
 ::selection{background:var(--coral-100)}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes nuevaPulse{0%{box-shadow:0 0 0 0 rgba(218,74,94,.45)}70%{box-shadow:0 0 0 10px rgba(218,74,94,0)}100%{box-shadow:0 0 0 0 rgba(218,74,94,0)}}
 @keyframes subeEntra{from{opacity:0;transform:translateY(80px)}to{opacity:1;transform:translateY(0)}}
 @keyframes subeSale{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-90px)}}
 @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}
@@ -203,6 +205,10 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 .mod-card .hora{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-400)}
 .mod-card .acts{display:flex; gap:8px}
 .mod-card.live{border-color:var(--coral-100); background:var(--coral-50); gap:10px}
+.mod-card.nueva{
+  border-color:var(--coral-500); background:var(--coral-50); gap:10px;
+  animation:fadeUp .25s ease both, nuevaPulse 1.2s ease-out 2;
+}
 .mod-card.queued{background:#fff}
 .mod-card.done{border-color:var(--neutral-100); background:var(--neutral-50); gap:8px; padding:13px 14px}
 .mod-card.done p{font-size:13.5px; line-height:1.5; color:var(--neutral-600)}
@@ -293,7 +299,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
     <div class="mod-head">
       <div>
         <h1>Moderación</h1>
-        <p>Aprueba lo que llega. En la sala solo se ve una pregunta; el resto espera en cola.</p>
+        <p>La sala empieza vacía. Manda preguntas a cola y pulsa Poner ahora para enseñar una.</p>
       </div>
       <div class="mod-stats">
         <div class="mod-stat"><div class="n" id="n-entrantes">0</div><div class="l">ENTRANTES</div></div>
@@ -375,11 +381,11 @@ async function addQuestion(text){
   if(!r.ok) throw new Error(data.error || "No se pudo enviar la pregunta");
   return data;
 }
-async function setStatus(id, status){
+async function setStatus(id, status, extra){
   await fetch("/api/questions/" + id + "/status", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status, ...(extra || {}) })
   });
 }
 
@@ -445,15 +451,20 @@ const colEntrantes = document.getElementById("col-entrantes");
 const colPantalla = document.getElementById("col-pantalla");
 const colRespondidas = document.getElementById("col-respondidas");
 
-function cardEntrante(q){
+function ordenPantalla(a, b){
+  return Number(a.screen_ts || a.ts) - Number(b.screen_ts || b.ts);
+}
+
+function cardEntrante(q, esNueva){
   return `
-    <div class="mod-card">
+    <div class="mod-card${esNueva ? " nueva" : ""}">
+      ${esNueva ? '<span class="mod-tag">NUEVA</span>' : ""}
       <p>${escapeHtml(q.text)}</p>
       <div class="row">
         <span class="hora">${hora(q.ts)}</span>
         <div class="acts">
           <button class="btn-ghost" type="button" data-id="${q.id}" data-status="descartada">Descartar</button>
-          <button class="btn-coral" type="button" data-id="${q.id}" data-status="pantalla">A pantalla</button>
+          <button class="btn-coral" type="button" data-id="${q.id}" data-status="cola">A cola</button>
         </div>
       </div>
     </div>`;
@@ -475,8 +486,8 @@ function cardPantallaCola(q){
       <span class="mod-tag cola">EN COLA</span>
       <p>${escapeHtml(q.text)}</p>
       <div class="row">
-        <span class="hora">${hora(q.ts)}</span>
         <button class="btn-link" type="button" data-id="${q.id}" data-status="pendiente">Quitar</button>
+        <button class="btn-coral" type="button" data-id="${q.id}" data-status="pantalla" data-ahora="1">Poner ahora</button>
       </div>
     </div>`;
 }
@@ -489,10 +500,12 @@ function cardRespondida(q){
 }
 
 let lastModSnap = "";
+const idsVistosMod = new Set();
+let modCargaInicial = true;
 function modSnapshot(list){
   return list
     .filter((q) => q.status !== "descartada")
-    .map((q) => q.id + ":" + q.status)
+    .map((q) => q.id + ":" + q.status + ":" + (q.screen_ts || ""))
     .join("|");
 }
 
@@ -501,11 +514,14 @@ async function refreshModeracion(){
   const snap = modSnapshot(list);
   if(snap === lastModSnap) return;
   lastModSnap = snap;
+  if(modCargaInicial){
+    list.forEach((q) => idsVistosMod.add(q.id));
+    modCargaInicial = false;
+  }
   const pendientes = list.filter((q) => q.status === "pendiente").sort((a,b) => a.ts - b.ts);
-  const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
+  const ahora = list.filter((q) => q.status === "pantalla").sort(ordenPantalla)[0] || null;
+  const cola = list.filter((q) => q.status === "cola").sort(ordenPantalla);
   const respondidas = list.filter((q) => q.status === "respondida").sort((a,b) => b.ts - a.ts);
-  const ahora = pantalla[0];
-  const cola = pantalla.slice(1);
 
   document.getElementById("n-entrantes").textContent = pendientes.length;
   document.getElementById("n-pantalla").textContent = ahora ? 1 : 0;
@@ -513,7 +529,7 @@ async function refreshModeracion(){
   document.getElementById("n-respondidas").textContent = respondidas.length;
 
   colEntrantes.innerHTML = pendientes.length
-    ? pendientes.map(cardEntrante).join("")
+    ? pendientes.map((q) => cardEntrante(q, !idsVistosMod.has(q.id))).join("")
     : '<p class="mod-empty">Nada por revisar ahora mismo.</p>';
 
   let htmlPantalla = "";
@@ -522,7 +538,7 @@ async function refreshModeracion(){
     htmlPantalla += '<p class="mod-split">COLA · ' + cola.length + '</p>';
     htmlPantalla += cola.map(cardPantallaCola).join("");
   }
-  colPantalla.innerHTML = htmlPantalla || '<p class="mod-empty">La pantalla está esperando la siguiente pregunta.</p>';
+  colPantalla.innerHTML = htmlPantalla || '<p class="mod-empty">La sala está vacía. Elige una de la cola para enseñarla.</p>';
 
   colRespondidas.innerHTML = respondidas.length
     ? respondidas.map(cardRespondida).join("")
@@ -533,7 +549,7 @@ document.getElementById("view-moderacion").addEventListener("click", async (e) =
   const btn = e.target.closest("button[data-id][data-status]");
   if(!btn) return;
   btn.disabled = true;
-  await setStatus(btn.dataset.id, btn.dataset.status);
+  await setStatus(btn.dataset.id, btn.dataset.status, { ahora: btn.dataset.ahora === "1" });
   refreshModeracion();
 });
 
@@ -560,9 +576,9 @@ async function refreshProyeccion(){
   if(proySaliendo) return;
   const list = await getQuestions();
   const pendientes = list.filter((q) => q.status === "pendiente");
-  const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
+  const destacada = list.filter((q) => q.status === "pantalla").sort(ordenPantalla)[0] || null;
+  const cola = list.filter((q) => q.status === "cola").sort(ordenPantalla);
   const respondidas = list.filter((q) => q.status === "respondida");
-  const destacada = pantalla[0];
 
   if(destacada){
     if(destacada.id !== lastDestacadaId){
@@ -571,31 +587,35 @@ async function refreshProyeccion(){
     }
   } else {
     lastDestacadaId = null;
-    const vacio = pendientes.length
-      ? (pendientes.length === 1
+    let vacio = "La sala está vacía.";
+    if(cola.length){
+      vacio = cola.length === 1
+        ? "Hay una pregunta en cola."
+        : "Hay " + cola.length + " preguntas en cola.";
+    } else if(pendientes.length){
+      vacio = pendientes.length === 1
         ? "Hay una pregunta esperando aprobación."
-        : "Hay " + pendientes.length + " preguntas esperando aprobación.")
-      : "Esperando la primera pregunta de la sala.";
+        : "Hay " + pendientes.length + " preguntas esperando aprobación.";
+    }
     proyBubbleArea.innerHTML = '<p class="proy-vacio">' + vacio + '</p>';
   }
 
-  proyContador.textContent = pantalla.length
-    ? (respondidas.length + 1) + " / " + (respondidas.length + pantalla.length)
-    : (respondidas.length ? "fin · " + respondidas.length + " vistas" : "sin preguntas");
-  proyCola.textContent = pantalla.length > 1
-    ? (pantalla.length - 1) + " en cola"
-    : (pantalla.length === 1
-      ? "última en pantalla"
-      : (pendientes.length ? pendientes.length + " por aprobar" : "nada en pantalla"));
+  const total = respondidas.length + (destacada ? 1 : 0) + cola.length;
+  proyContador.textContent = destacada
+    ? (respondidas.length + 1) + " / " + total
+    : (total ? "sala vacía · " + cola.length + " en cola" : "sin preguntas");
+  proyCola.textContent = destacada
+    ? (cola.length ? cola.length + " en cola" : "última en pantalla")
+    : (cola.length ? cola.length + " en cola" : (pendientes.length ? pendientes.length + " por aprobar" : "nada en pantalla"));
   btnAtras.disabled = respondidas.length === 0;
-  btnAvanzar.disabled = pantalla.length === 0;
+  btnAvanzar.disabled = !destacada;
 }
 
 async function avanzarProyeccion(){
   const list = await getQuestions();
-  const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
-  const actual = pantalla[0];
+  const actual = list.filter((q) => q.status === "pantalla").sort(ordenPantalla)[0];
   if(!actual || proySaliendo) return;
+  const siguiente = list.filter((q) => q.status === "cola").sort(ordenPantalla)[0];
   proySaliendo = true;
   const wrap = proyBubbleArea.querySelector(".proy-bubble-wrap");
   if(wrap){
@@ -605,6 +625,7 @@ async function avanzarProyeccion(){
   setTimeout(async () => {
     lastDestacadaId = null;
     await setStatus(actual.id, "respondida");
+    if(siguiente) await setStatus(siguiente.id, "pantalla");
     proySaliendo = false;
     refreshProyeccion();
   }, 320);

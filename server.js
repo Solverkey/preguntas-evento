@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json({ limit: "32kb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
-const ESTADOS_VALIDOS = ["pendiente", "pantalla", "respondida", "descartada"];
+const ESTADOS_VALIDOS = ["pendiente", "pantalla", "cola", "respondida", "descartada"];
 const sseClients = new Set();
 
 function uid() {
@@ -44,6 +44,9 @@ async function initDb() {
   await pool.query(
     `ALTER TABLE questions ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pendiente';`
   );
+  await pool.query(
+    `ALTER TABLE questions ADD COLUMN IF NOT EXISTS screen_ts BIGINT;`
+  );
 }
 
 app.get("/api/stream", (req, res) => {
@@ -62,7 +65,7 @@ app.get("/api/stream", (req, res) => {
 app.get("/api/questions", async (req, res) => {
   try {
     const { rows } = await pool.query(
-      "SELECT id, text, ts, status FROM questions ORDER BY ts ASC"
+      "SELECT id, text, ts, status, screen_ts FROM questions ORDER BY ts ASC"
     );
     res.json(rows);
   } catch (e) {
@@ -93,17 +96,37 @@ app.post("/api/questions", async (req, res) => {
 });
 
 app.post("/api/questions/:id/status", async (req, res) => {
-  const { status } = req.body || {};
+  const { status, ahora } = req.body || {};
   if (!ESTADOS_VALIDOS.includes(status)) {
     return res.status(400).json({ error: "Estado no válido" });
   }
   try {
-    const result = await pool.query(
-      "UPDATE questions SET status = $1 WHERE id = $2",
-      [status, req.params.id]
-    );
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Pregunta no encontrada" });
+    if (status === "pantalla" || status === "cola") {
+      const screenTs = Date.now();
+      if (status === "pantalla") {
+        await pool.query(
+          `UPDATE questions
+           SET status = 'cola',
+               screen_ts = COALESCE(screen_ts, $2) - 1
+           WHERE status = 'pantalla' AND id <> $1`,
+          [req.params.id, screenTs]
+        );
+      }
+      const result = await pool.query(
+        "UPDATE questions SET status = $1, screen_ts = $2 WHERE id = $3",
+        [status, screenTs, req.params.id]
+      );
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Pregunta no encontrada" });
+      }
+    } else {
+      const result = await pool.query(
+        "UPDATE questions SET status = $1 WHERE id = $2",
+        [status, req.params.id]
+      );
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Pregunta no encontrada" });
+      }
     }
     broadcast();
     res.json({ ok: true });
