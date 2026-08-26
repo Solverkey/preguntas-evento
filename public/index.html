@@ -28,6 +28,14 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;color-scheme:light}
 body{margin:0;background:var(--cream);color:var(--neutral-900);font-family:'Poppins',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh}
+html:has(body.proyeccion-on),
+body.proyeccion-on{
+  height:100dvh; max-height:100dvh; overflow:hidden;
+  overscroll-behavior:none; scrollbar-width:none;
+}
+body.proyeccion-on::-webkit-scrollbar{display:none}
+body.proyeccion-on{display:flex; flex-direction:column}
+body.proyeccion-on .topbar{flex-shrink:0}
 textarea,input,button{font-family:'Poppins',sans-serif}
 ::selection{background:var(--coral-100)}
 
@@ -121,15 +129,19 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 }
 #otra-btn:hover{background:var(--coral-600)}
 
+#view-proyeccion.view.active{
+  display:flex; flex-direction:column; flex:1; min-height:0;
+  overflow:hidden; touch-action:none;
+}
 #view-proyeccion .inner{
   background:var(--neutral-900);
   background-image:radial-gradient(#332E2B 1px,transparent 1px);
   background-size:26px 26px;
   color:var(--cream);
-  min-height:calc(100vh - 62px);
-  min-height:calc(100dvh - 62px);
-  padding:56px 24px 64px;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:44px;
+  flex:1; min-height:0; height:100%;
+  padding:40px 24px 36px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:36px;
+  overflow:hidden;
 }
 .proy-eyebrow{
   display:flex; align-items:center; justify-content:center;
@@ -141,12 +153,12 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 .proy-eyebrow span svg{
   position:absolute; left:0; bottom:-10px; width:100%; height:12px;
 }
-.proy-stage{min-height:180px; width:100%; max-width:1000px; display:flex; justify-content:center}
+.proy-stage{min-height:0; flex:1 1 auto; width:100%; max-width:1000px; display:flex; justify-content:center; align-items:center; overflow:hidden}
 .proy-bubble-wrap{display:flex; flex-direction:column; align-items:flex-start; max-width:1000px; width:100%}
 .proy-bubble-wrap.entra{animation:subeEntra .45s cubic-bezier(.4,0,.2,1) both}
 .proy-bubble-wrap.sale{animation:subeSale .32s cubic-bezier(.4,0,.2,1) both}
 .proy-bubble{position:relative; background:var(--coral-500); color:#fff; border-radius:24px; padding:36px 44px}
-.proy-bubble p{margin:0; font-family:'Spartan',sans-serif; font-weight:500; font-size:clamp(26px,4vw,46px); line-height:1.22; letter-spacing:-0.015em}
+.proy-bubble p{margin:0; font-family:'Spartan',sans-serif; font-weight:500; font-size:clamp(26px,4vw,46px); line-height:1.22; letter-spacing:-0.015em; overflow-wrap:anywhere}
 .proy-bubble-tail{position:absolute; left:34px; bottom:-20px; width:34px; height:22px; background:var(--coral-500); clip-path:polygon(0 0,100% 0,22% 100%)}
 .proy-vacio{margin:0; font-family:'Spartan',sans-serif; font-weight:300; font-size:clamp(22px,3.5vw,40px); line-height:1.2; color:var(--neutral-600); max-width:16em; text-align:center}
 .proy-nav{display:flex; align-items:center; gap:18px; margin-top:4px}
@@ -158,6 +170,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 .proy-counter{display:flex; flex-direction:column; align-items:center; gap:4px; min-width:130px}
 .proy-counter .n{font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.14em; color:var(--neutral-500)}
 .proy-counter .cola{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-600)}
+.proy-nav,.proy-eyebrow,.proy-foot{flex-shrink:0}
 .proy-foot{display:flex; align-items:center; gap:10px}
 .proy-foot img{height:16px; display:block; opacity:.7}
 .proy-foot span{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.1em; color:var(--neutral-700)}
@@ -215,7 +228,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
   .proy-bubble{padding:26px 28px}
   .proy-nav{flex-wrap:wrap; justify-content:center}
   .proy-foot span{display:none}
-  #view-proyeccion .inner{padding:40px 16px 48px; gap:28px}
+  #view-proyeccion .inner{padding:28px 16px 24px; gap:22px}
   #view-moderacion .inner{padding:24px 16px 48px}
   .mod-head h1{font-size:28px}
   .mod-cols{grid-template-columns:1fr}
@@ -312,7 +325,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
     </div>
     <div class="proy-foot">
       <img src="/assets/skai-logo-coral.svg" alt="SKAI" />
-      <span>ESPACIO O ← → PARA NAVEGAR</span>
+      <span>DESLIZA ↑ · ESPACIO O ← → PARA NAVEGAR</span>
     </div>
   </div>
 </div>
@@ -582,6 +595,34 @@ window.addEventListener("keydown", (e) => {
   if(e.key === "ArrowRight" || e.key === " "){ e.preventDefault(); avanzarProyeccion(); }
   if(e.key === "ArrowLeft"){ e.preventDefault(); retrocederProyeccion(); }
 });
+
+const proyView = document.getElementById("view-proyeccion");
+let swipeY = null;
+let swipeX = null;
+proyView.addEventListener("touchstart", (e) => {
+  if(e.touches.length !== 1) return;
+  swipeY = e.touches[0].clientY;
+  swipeX = e.touches[0].clientX;
+}, {passive: true});
+proyView.addEventListener("touchmove", (e) => {
+  if(swipeY == null) return;
+  e.preventDefault();
+}, {passive: false});
+proyView.addEventListener("touchend", (e) => {
+  if(swipeY == null) return;
+  const t = e.changedTouches[0];
+  const dy = t.clientY - swipeY;
+  const dx = t.clientX - swipeX;
+  swipeY = null;
+  swipeX = null;
+  if(Math.abs(dy) < 56 || Math.abs(dy) < Math.abs(dx) * 1.15) return;
+  if(dy < 0) avanzarProyeccion();
+  else retrocederProyeccion();
+}, {passive: true});
+window.addEventListener("wheel", (e) => {
+  if(currentView() !== "proyeccion") return;
+  e.preventDefault();
+}, {passive: false});
 
 async function refreshAll(){
   const v = currentView();
