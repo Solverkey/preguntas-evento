@@ -139,8 +139,8 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
   background-size:26px 26px;
   color:var(--cream);
   flex:1; min-height:0; height:100%;
-  padding:40px 24px 36px;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:36px;
+  padding:48px 24px 96px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:32px;
   overflow:hidden;
 }
 .proy-eyebrow{
@@ -153,7 +153,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 .proy-eyebrow span svg{
   position:absolute; left:0; bottom:-10px; width:100%; height:12px;
 }
-.proy-stage{min-height:0; flex:1 1 auto; width:100%; max-width:1000px; display:flex; justify-content:center; align-items:center; overflow:hidden}
+.proy-stage{min-height:160px; width:100%; max-width:1000px; display:flex; justify-content:center; align-items:center; overflow:hidden}
 .proy-bubble-wrap{display:flex; flex-direction:column; align-items:flex-start; max-width:1000px; width:100%}
 .proy-bubble-wrap.entra{animation:subeEntra .45s cubic-bezier(.4,0,.2,1) both}
 .proy-bubble-wrap.sale{animation:subeSale .32s cubic-bezier(.4,0,.2,1) both}
@@ -202,9 +202,20 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 .mod-card .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
 .mod-card .hora{font-family:ui-monospace,Menlo,monospace; font-size:10.5px; color:var(--neutral-400)}
 .mod-card .acts{display:flex; gap:8px}
-.mod-card.live{border-color:var(--coral-100); background:var(--coral-50)}
+.mod-card.live{border-color:var(--coral-100); background:var(--coral-50); gap:10px}
+.mod-card.queued{background:#fff}
 .mod-card.done{border-color:var(--neutral-100); background:var(--neutral-50); gap:8px; padding:13px 14px}
 .mod-card.done p{font-size:13.5px; line-height:1.5; color:var(--neutral-600)}
+.mod-tag{
+  font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.12em;
+  color:var(--coral-600); font-weight:600;
+}
+.mod-tag.cola{color:var(--neutral-500); font-weight:500}
+.mod-split{
+  margin:4px 0 0; padding:10px 2px 2px;
+  font-family:ui-monospace,Menlo,monospace; font-size:10px; letter-spacing:.12em;
+  color:var(--neutral-400); border-top:1px solid var(--neutral-100);
+}
 .mod-empty{margin:0; padding:18px 4px; font-size:13px; color:var(--neutral-400); text-align:center}
 .btn-ghost{border:1px solid var(--neutral-300); background:#fff; color:var(--neutral-600); border-radius:9px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer}
 .btn-ghost:hover{background:var(--neutral-100); color:var(--neutral-900)}
@@ -228,7 +239,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
   .proy-bubble{padding:26px 28px}
   .proy-nav{flex-wrap:wrap; justify-content:center}
   .proy-foot span{display:none}
-  #view-proyeccion .inner{padding:28px 16px 24px; gap:22px}
+  #view-proyeccion .inner{padding:28px 16px 72px; gap:22px}
   #view-moderacion .inner{padding:24px 16px 48px}
   .mod-head h1{font-size:28px}
   .mod-cols{grid-template-columns:1fr}
@@ -282,11 +293,12 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
     <div class="mod-head">
       <div>
         <h1>Moderación</h1>
-        <p>Filtra lo que llega y decide qué se ve en la pantalla de la sala.</p>
+        <p>Aprueba lo que llega. En la sala solo se ve una pregunta; el resto espera en cola.</p>
       </div>
       <div class="mod-stats">
         <div class="mod-stat"><div class="n" id="n-entrantes">0</div><div class="l">ENTRANTES</div></div>
         <div class="mod-stat"><div class="n coral" id="n-pantalla">0</div><div class="l">EN PANTALLA</div></div>
+        <div class="mod-stat"><div class="n" id="n-cola">0</div><div class="l">EN COLA</div></div>
         <div class="mod-stat"><div class="n green" id="n-respondidas">0</div><div class="l">RESPONDIDAS</div></div>
       </div>
     </div>
@@ -446,13 +458,25 @@ function cardEntrante(q){
       </div>
     </div>`;
 }
-function cardPantalla(q){
+function cardPantallaAhora(q){
   return `
     <div class="mod-card live">
+      <span class="mod-tag">AHORA EN SALA</span>
       <p>${escapeHtml(q.text)}</p>
       <div class="row">
         <button class="btn-link" type="button" data-id="${q.id}" data-status="pendiente">Quitar</button>
         <button class="btn-ok" type="button" data-id="${q.id}" data-status="respondida">Respondida</button>
+      </div>
+    </div>`;
+}
+function cardPantallaCola(q){
+  return `
+    <div class="mod-card queued">
+      <span class="mod-tag cola">EN COLA</span>
+      <p>${escapeHtml(q.text)}</p>
+      <div class="row">
+        <span class="hora">${hora(q.ts)}</span>
+        <button class="btn-link" type="button" data-id="${q.id}" data-status="pendiente">Quitar</button>
       </div>
     </div>`;
 }
@@ -480,17 +504,26 @@ async function refreshModeracion(){
   const pendientes = list.filter((q) => q.status === "pendiente").sort((a,b) => a.ts - b.ts);
   const pantalla = list.filter((q) => q.status === "pantalla").sort((a,b) => a.ts - b.ts);
   const respondidas = list.filter((q) => q.status === "respondida").sort((a,b) => b.ts - a.ts);
+  const ahora = pantalla[0];
+  const cola = pantalla.slice(1);
 
   document.getElementById("n-entrantes").textContent = pendientes.length;
-  document.getElementById("n-pantalla").textContent = pantalla.length;
+  document.getElementById("n-pantalla").textContent = ahora ? 1 : 0;
+  document.getElementById("n-cola").textContent = cola.length;
   document.getElementById("n-respondidas").textContent = respondidas.length;
 
   colEntrantes.innerHTML = pendientes.length
     ? pendientes.map(cardEntrante).join("")
     : '<p class="mod-empty">Nada por revisar ahora mismo.</p>';
-  colPantalla.innerHTML = pantalla.length
-    ? pantalla.map(cardPantalla).join("")
-    : '<p class="mod-empty">La pantalla está esperando la siguiente pregunta.</p>';
+
+  let htmlPantalla = "";
+  if(ahora) htmlPantalla += cardPantallaAhora(ahora);
+  if(cola.length){
+    htmlPantalla += '<p class="mod-split">COLA · ' + cola.length + '</p>';
+    htmlPantalla += cola.map(cardPantallaCola).join("");
+  }
+  colPantalla.innerHTML = htmlPantalla || '<p class="mod-empty">La pantalla está esperando la siguiente pregunta.</p>';
+
   colRespondidas.innerHTML = respondidas.length
     ? respondidas.map(cardRespondida).join("")
     : '<p class="mod-empty">Aún no se ha respondido ninguna.</p>';
@@ -599,29 +632,46 @@ window.addEventListener("keydown", (e) => {
 const proyView = document.getElementById("view-proyeccion");
 let swipeY = null;
 let swipeX = null;
-proyView.addEventListener("touchstart", (e) => {
-  if(e.touches.length !== 1) return;
-  swipeY = e.touches[0].clientY;
-  swipeX = e.touches[0].clientX;
-}, {passive: true});
-proyView.addEventListener("touchmove", (e) => {
-  if(swipeY == null) return;
-  e.preventDefault();
-}, {passive: false});
-proyView.addEventListener("touchend", (e) => {
-  if(swipeY == null) return;
-  const t = e.changedTouches[0];
-  const dy = t.clientY - swipeY;
-  const dx = t.clientX - swipeX;
-  swipeY = null;
-  swipeX = null;
-  if(Math.abs(dy) < 56 || Math.abs(dy) < Math.abs(dx) * 1.15) return;
+let swipeLock = false;
+
+function gestoVertical(dy, dx){
+  if(swipeLock || proySaliendo) return;
+  if(Math.abs(dy) < 48 || Math.abs(dy) < Math.abs(dx) * 1.1) return;
+  swipeLock = true;
   if(dy < 0) avanzarProyeccion();
   else retrocederProyeccion();
-}, {passive: true});
+  setTimeout(() => { swipeLock = false; }, 420);
+}
+
+proyView.addEventListener("pointerdown", (e) => {
+  if(currentView() !== "proyeccion") return;
+  if(e.target.closest("button")) return;
+  swipeY = e.clientY;
+  swipeX = e.clientX;
+});
+proyView.addEventListener("pointerup", (e) => {
+  if(swipeY == null) return;
+  const dy = e.clientY - swipeY;
+  const dx = e.clientX - swipeX;
+  swipeY = null;
+  swipeX = null;
+  gestoVertical(dy, dx);
+});
+proyView.addEventListener("pointercancel", () => { swipeY = null; swipeX = null; });
+
+let wheelAcc = 0;
+let wheelReset = 0;
 window.addEventListener("wheel", (e) => {
   if(currentView() !== "proyeccion") return;
   e.preventDefault();
+  clearTimeout(wheelReset);
+  wheelAcc += e.deltaY;
+  if(Math.abs(wheelAcc) >= 70){
+    const dy = wheelAcc > 0 ? -1 : 1;
+    wheelAcc = 0;
+    gestoVertical(dy * 80, 0);
+  }
+  wheelReset = setTimeout(() => { wheelAcc = 0; }, 180);
 }, {passive: false});
 
 async function refreshAll(){
