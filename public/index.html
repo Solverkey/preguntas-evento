@@ -29,6 +29,10 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;color-scheme:light}
 body{margin:0;background:var(--cream);color:var(--neutral-900);font-family:'Poppins',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh}
+body:not(.proyeccion-on){display:flex; flex-direction:column; overflow-x:hidden}
+body:not(.proyeccion-on) .topbar{flex-shrink:0}
+#view-asistente.view.active,
+#view-moderacion.view.active{flex:1; min-height:0; width:100%; overflow:auto}
 html:has(body.proyeccion-on),
 body.proyeccion-on{
   height:100dvh; max-height:100dvh; overflow:hidden;
@@ -81,8 +85,7 @@ body.proyeccion-on .live-pill{color:var(--neutral-400)}
 #view-asistente .inner{
   background-image:radial-gradient(var(--neutral-200) 1px,transparent 1px);
   background-size:26px 26px;
-  min-height:calc(100vh - 62px);
-  min-height:calc(100dvh - 62px);
+  min-height:100%;
   display:flex; justify-content:center;
   padding:56px 24px 80px;
   padding-left:max(24px, env(safe-area-inset-left));
